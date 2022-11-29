@@ -5,4 +5,4 @@
 /// @brief Finds the closest bed
 /// @param client The client performing the action
 /// @return Success if the bed found, false otherwise
-Botcraft::Status FindBed(Botcraft::BehaviourClient& client);
+Botcraft::Status FindBed(Botcraft::BehaviourClient& client, int search_radius);
