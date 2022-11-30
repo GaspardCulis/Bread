@@ -5,7 +5,9 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/Botcraft/botcraft/include",
-                "${workspaceFolder}/Bread/include"
+                "${workspaceFolder}/Bread/include",
+                "${workspaceFolder}/Botcraft/protocolCraft/include",
+                "${workspaceFolder}/Botcraft/3rdparty/json/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

@@ -4,28 +4,27 @@
 #include <unistd.h>
 #include <string>
 #include "BedwarsTasks.hpp"
+#include "AdvancedClient.hpp"
 
 using namespace std;
 
+bool match_bed(const Block *block) {
+    const string suffix = "_bed";
+    const string& block_name = block->GetBlockstate()->GetName();
+    return block_name.size() >= suffix.size() && 0 == block_name.compare(block_name.size()-suffix.size(), suffix.size(), suffix);
+}
+
 int main(int argc, char* argv[])
 {
-    Botcraft::SimpleBehaviourClient client(false);
+    AdvancedClient client;
     client.Connect("localhost", "Maurice");
     client.SetAutoRespawn(true);
 
-    auto bedwars_tree = Botcraft::Builder<Botcraft::SimpleBehaviourClient>()
-                                .sequence()
-                                    .selector()
-                                        .leaf([=](Botcraft::SimpleBehaviourClient& c) { return FindBed(c, 100); })
-                                    .end()
-                                    .leaf([](Botcraft::SimpleBehaviourClient& c) { c.SetBehaviourTree(nullptr); return Botcraft::Status::Success; })
-                                .end()
-                                .build();
-
-
-    client.SetBehaviourTree(bedwars_tree);
-    
-    client.RunBehaviourUntilClosed();
+    sleep(5);
+    const vector<Vector3<int>> blocks = client.findBlocks(match_bed, 128, 1);
+    for (Vector3<int> pos : blocks) {
+        cout << "Bed is : " << pos << endl;
+    }
 
     while (true)
     {
