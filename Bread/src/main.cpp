@@ -21,9 +21,14 @@ int main(int argc, char* argv[])
     client.SetAutoRespawn(true);
 
     sleep(5);
-    const vector<Vector3<int>> blocks = client.findBlocks(match_bed, 128, 1);
+    // Match white_stained_glass
+    const vector<Vector3<int>> blocks = client.findBlocks(
+        [](const Block *block) {
+            return block->GetBlockstate()->GetName() == "minecraft:white_stained_glass";
+        }, 4);
+    client.sortPositionsFromNearest(blocks);
     for (Vector3<int> pos : blocks) {
-        cout << "Bed is : " << pos << endl;
+        //cout << "Bed is : " << pos << endl;
     }
 
     while (true)
