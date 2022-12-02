@@ -8,7 +8,7 @@ Vector3<double> AdvancedClient::getPosition() const {
     return this->GetEntityManager()->GetLocalPlayer()->GetPosition();
 }
 
-vector<Vector3<int>> AdvancedClient::findBlocks(bool(*match_function)(const Block *block), int search_radius, int max_blocks) const {
+vector<Vector3<int>> AdvancedClient::findBlocks(std::function<bool(const Block *block)> match_function, int search_radius, int max_results) const {
     vector<Vector3<int>> out;
 
     std::shared_ptr<World> world = this->GetWorld();
@@ -32,7 +32,7 @@ vector<Vector3<int>> AdvancedClient::findBlocks(bool(*match_function)(const Bloc
                 nb_checks++;
                 if ( block != nullptr && match_function(block) ) {
                     out.push_back(Vector3(current));
-                    if (out.size() == max_blocks) {
+                    if (out.size() == max_results) {
                         goto end;
                     }
                 }
@@ -48,6 +48,13 @@ end:
     LOG_INFO("Checking " << nb_checks << " blocks took " << duration.count() << " milliseconds.");
 
     return out;
+}
+
+vector<Vector3<int>> AdvancedClient::findBlocks(const string block_name, int search_radius, int max_results) const {
+    return this->findBlocks(
+        [block_name](const Block *block) -> bool {
+            return block->GetBlockstate()->GetName() == block_name;
+        }, search_radius, max_results);
 }
 
 void AdvancedClient::sortPositionsFromNearest(vector<Vector3<int>> positions) const {
@@ -71,8 +78,14 @@ void AdvancedClient::sortPositionsFromNearest(vector<Vector3<int>> positions) co
     LOG_INFO("Sorting " << positions.size() << " positions " << duration.count() << " microseconds." );
 }
 
-Vector3<int> AdvancedClient::findNearestBlock(bool(*match_function)(const Block *block), int search_radius) const {
+Vector3<int> AdvancedClient::findNearestBlock(std::function<bool(const Block *block)> match_function, int search_radius) const {
     const vector<Vector3<int>> blocks = this->findBlocks(match_function, search_radius);
+    sortPositionsFromNearest(blocks);
+    return blocks[0];
+}
+
+Vector3<int> AdvancedClient::findNearestBlock(const string block_name, int search_radius) const {
+    const vector<Vector3<int>> blocks = this->findBlocks(block_name, search_radius);
     sortPositionsFromNearest(blocks);
     return blocks[0];
 }

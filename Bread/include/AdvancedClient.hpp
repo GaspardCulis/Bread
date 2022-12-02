@@ -21,11 +21,15 @@ public:
 
     Vector3<double> getPosition() const;
 
-    vector<Vector3<int>> findBlocks(bool(*match_function)(const Block *block), int search_radius = 64, int max_blocks = -1) const;
+    vector<Vector3<int>> findBlocks(std::function<bool(const Block *block)> match_function, int search_radius = 64, int max_results = -1) const;
+    
+    vector<Vector3<int>> findBlocks(const string block_name, int search_radius = 64, int max_results = -1) const;
+
+    Vector3<int> findNearestBlock(std::function<bool(const Block *block)> match_function, int search_radius = 64) const;
+
+    Vector3<int> findNearestBlock(const string block_name, int search_radius = 64) const;
 
     void sortPositionsFromNearest(vector<Vector3<int>> positions) const;
-
-    Vector3<int> findNearestBlock(bool(*match_function)(const Block *block), int search_radius = 64) const;
     
     virtual ~AdvancedClient();
 };

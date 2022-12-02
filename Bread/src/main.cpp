@@ -22,12 +22,10 @@ int main(int argc, char* argv[])
 
     sleep(5);
     // Match white_stained_glass
-    const vector<Vector3<int>> blocks = client.findBlocks(
-        [](const Block *block) {
-            return block->GetBlockstate()->GetName() == "minecraft:white_stained_glass";
-        }, 4);
+    const vector<Vector3<int>> blocks = client.findBlocks("minecraft:brewing_stand");
     client.sortPositionsFromNearest(blocks);
     for (Vector3<int> pos : blocks) {
+        //client.("/setblock " + to_string(pos.x) + " " + to_string(pos.y) + " " + to_string(pos.z) + " minecraft:bedrock");
         //cout << "Bed is : " << pos << endl;
     }
 
