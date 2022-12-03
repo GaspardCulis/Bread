@@ -8,6 +8,19 @@ Vector3<double> AdvancedClient::getPosition() const {
     return this->GetEntityManager()->GetLocalPlayer()->GetPosition();
 }
 
+const Block* AdvancedClient::getBlock(Vector3<int> position) const {
+    std::shared_ptr<World> world = this->GetWorld();
+    std::lock_guard<std::mutex> lock_world(world->GetMutex());
+    return world->GetBlock(position);
+}
+
+const shared_ptr<Entity> AdvancedClient::getEntity(int id) const {
+    std::shared_ptr<EntityManager> entity_manager = this->GetEntityManager();
+    std::lock_guard<std::mutex> lock_entity_manager(entity_manager->GetMutex());
+
+    return entity_manager->GetEntity(id);
+}
+
 vector<Vector3<int>> AdvancedClient::findBlocks(std::function<bool(const Block *block)> match_function, int search_radius, int max_results) const {
     vector<Vector3<int>> out;
 
@@ -88,6 +101,29 @@ Vector3<int> AdvancedClient::findNearestBlock(const string block_name, int searc
     const vector<Vector3<int>> blocks = this->findBlocks(block_name, search_radius);
     sortPositionsFromNearest(blocks);
     return blocks[0];
+}
+
+vector<int> AdvancedClient::findEntities(std::function<bool(const std::shared_ptr<Entity> entity)> match_function, int max_results) const {
+    vector<int> out;
+
+    std::shared_ptr<EntityManager> entity_manager = this->GetEntityManager();
+    std::lock_guard<std::mutex> lock_entity_manager(entity_manager->GetMutex());
+
+    for (const auto& e : entity_manager->GetEntities()) {
+        if (match_function(e.second)) {
+            out.push_back(e.first);
+            if (out.size() == max_results) break;
+        }
+    }
+
+    return out;
+}
+
+vector<int> AdvancedClient::findEntities(const EntityType entity_type, int max_results) const {
+    return this->findEntities(
+        [entity_type](const std::shared_ptr<Entity> entity) -> bool {
+            return entity->GetType() == entity_type;
+        }, max_results);
 }
 
 AdvancedClient::AdvancedClient(const bool use_renderer_) : TemplatedBehaviourClient<AdvancedClient>(use_renderer_)

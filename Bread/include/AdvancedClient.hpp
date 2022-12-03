@@ -25,7 +25,17 @@ public:
     Vector3<double> getPosition() const;
 
     /**
-     * Finds all the blocks for which the match_function calback returned true in a certain radius. 
+     * Gets the block at a given position
+    */
+    const Block* getBlock(Vector3<int> position) const;
+
+    /**
+     * Gets the entity with the given id
+    */
+    const shared_ptr<Entity> getEntity(int id) const;
+
+    /**
+     * Finds all the blocks for which the match_function callback returned true in a certain radius. 
      * The search will stop and return when the number of found blocks equals max_results.
     */
     vector<Vector3<int>> findBlocks(std::function<bool(const Block *block)> match_function, int search_radius = 64, int max_results = -1) const;
@@ -51,6 +61,18 @@ public:
      * It gets all the surrounding blocks with findBlocks(const string, int, int), sorts the positions with sortPositionsFromNearest(vector<Vector3<int>>) and returns the first result.
     */
     Vector3<int> findNearestBlock(const string block_name, int search_radius = 64) const;
+
+    /**
+     * Finds all the blocks for which the match_function callback returned true. 
+     * The search will stop and return when the number of found blocks equals max_results.
+    */
+    vector<int> findEntities(std::function<bool(const std::shared_ptr<Entity> entity)> match_function, int max_results = -1) const;
+
+    /**
+     * Finds all the entities with the specified EntityType
+     * The search will stop and return when the number of found blocks equals max_results.
+    */
+    vector<int> findEntities(const EntityType type, int max_results = -1) const;
 
     /**
      * Sorts a given vector of Positions from the nearest to the furthest from the client.

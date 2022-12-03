@@ -29,6 +29,10 @@ int main(int argc, char* argv[])
         //cout << "Bed is : " << pos << endl;
     }
 
+    vector<int> villagers = client.findEntities(EntityType::Villager);
+
+    cout << "Found " << villagers.size() << " villagers." << endl;
+
     while (true)
     {
         sleep(1);
