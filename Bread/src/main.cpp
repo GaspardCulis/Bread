@@ -21,17 +21,14 @@ int main(int argc, char* argv[])
     client.SetAutoRespawn(true);
 
     sleep(5);
+
+    Vector3<int> block = client.findNearestBlock("minecraft:brewing_stand", 256);
+
+    client.SendChatCommand("tp " + to_string(block.x) + " " + to_string(block.y) + " " + to_string(block.z));
+
+
     // Match white_stained_glass
-    const vector<Vector3<int>> blocks = client.findBlocks("minecraft:brewing_stand");
-    client.sortPositionsFromNearest(blocks);
-    for (Vector3<int> pos : blocks) {
-        //client.("/setblock " + to_string(pos.x) + " " + to_string(pos.y) + " " + to_string(pos.z) + " minecraft:bedrock");
-        //cout << "Bed is : " << pos << endl;
-    }
-
-    vector<int> villagers = client.findEntities(EntityType::Villager);
-
-    cout << "Found " << villagers.size() << " villagers." << endl;
+    cout << "Goal reached" << endl;
 
     while (true)
     {

@@ -7,6 +7,7 @@
 #include <botcraft/Game/Entities/LocalPlayer.hpp>
 #include <botcraft/Game/World/World.hpp>
 #include <botcraft/Utilities/Logger.hpp>
+#include <botcraft/AI/Tasks/AllTasks.hpp>
 #include <time.h>
 #include <bits/stdc++.h>
 #include <chrono>
@@ -59,6 +60,8 @@ public:
      * Finds the nearest block matching the block_name (example: "minecraft:white_stained_glass", the minecraft: is required), in a certain radius. 
      * 
      * It gets all the surrounding blocks with findBlocks(const string, int, int), sorts the positions with sortPositionsFromNearest(vector<Vector3<int>>) and returns the first result.
+     * 
+     * Alias for findNearestBlock(std::function<bool(const Block *block)>, int)
     */
     Vector3<int> findNearestBlock(const string block_name, int search_radius = 64) const;
 
@@ -77,9 +80,9 @@ public:
     /**
      * Sorts a given vector of Positions from the nearest to the furthest from the client.
      * 
-     * Bubble sort.
+     * Uses std::sort with a custom comparator.
     */
-    void sortPositionsFromNearest(vector<Vector3<int>> positions) const;
+    void sortPositionsFromClosest(vector<Vector3<int>> &positions) const;
     
     virtual ~AdvancedClient();
 };
