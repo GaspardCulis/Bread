@@ -74,7 +74,11 @@ vector<Vector3<int>> AdvancedClient::findBlocks(const string block_name, int sea
 Vector3<int> AdvancedClient::findNearestBlock(std::function<bool(const Block *block)> match_function, int search_radius) const {
     vector<Vector3<int>> blocks = this->findBlocks(match_function, search_radius);
     sortPositionsFromClosest(blocks);
-    return blocks[0];
+    if (blocks.size() > 0) {
+        return blocks[0];
+    } else {
+        return NULL;
+    }
 }
 
 Vector3<int> AdvancedClient::findNearestBlock(const string block_name, int search_radius) const {
@@ -112,6 +116,10 @@ void AdvancedClient::sortPositionsFromClosest(vector<Vector3<int>> &positions) c
     std::sort(positions.begin(), positions.end(), [my_pos](const Vector3<int> &a, const Vector3<int> &b) -> bool {
         return a.SqrDist(my_pos) < b.SqrDist(my_pos);
     });
+}
+
+Status AdvancedClient::goTo(Vector3<int> target_position) {
+    return GoTo(*this, target_position, 2);
 }
 
 AdvancedClient::AdvancedClient(const bool use_renderer_) : TemplatedBehaviourClient<AdvancedClient>(use_renderer_)
