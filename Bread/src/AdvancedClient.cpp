@@ -118,10 +118,6 @@ void AdvancedClient::sortPositionsFromClosest(vector<Vector3<int>> &positions) c
     });
 }
 
-Status AdvancedClient::goTo(Vector3<int> target_position) {
-    return GoTo(*this, target_position, 2);
-}
-
 AdvancedClient::AdvancedClient(const bool use_renderer_) : TemplatedBehaviourClient<AdvancedClient>(use_renderer_)
 {
 
