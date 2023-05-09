@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
     sleep(5);
 
-    client.SetBehaviourTree(createTree());
+    client.SetBehaviourTree(BedwarsTasks::createTree());
     client.StartBehaviour();
     client.RunBehaviourUntilClosed();
 

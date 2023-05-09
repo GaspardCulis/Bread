@@ -1,6 +1,6 @@
 #include "FarmingTasks.hpp"
 
-Botcraft::Status InitializeBlocks(AdvancedClient& client, const int search_radius) {
+Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient& client, const int search_radius) {
     Botcraft::Blackboard& b = client.GetBlackboard();
 
     Position fishing_workstation_position;

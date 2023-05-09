@@ -5,7 +5,7 @@ using namespace std;
 using namespace Botcraft;
 using namespace ProtocolCraft;
 
-Status InitializeBlocks(AdvancedClient& client, int search_radius) {
+Status BedwarsTasks::InitializeBlocks(AdvancedClient& client, int search_radius) {
     Blackboard& b = client.GetBlackboard();
 
     try {
@@ -27,13 +27,13 @@ Status InitializeBlocks(AdvancedClient& client, int search_radius) {
 
 }
 
-std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> createTree() {
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> BedwarsTasks::createTree() {
     return Botcraft::Builder<AdvancedClient>()
         .sequence()
             .selector()
                 .leaf(CheckBlackboardBoolData, "BedwarsTasks.initialized")
                 .sequence()
-                    .leaf(InitializeBlocks, 100)
+                    .leaf(BedwarsTasks::InitializeBlocks, 100)
                 .end()
             .end()
         .end();
