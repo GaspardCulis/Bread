@@ -3,22 +3,24 @@
 Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient& client, const int search_radius) {
     Botcraft::Blackboard& b = client.GetBlackboard();
 
+    LOG_INFO("Initializing blocks");
+
     Position fishing_workstation_position;
     Position farming_workstation_position;
 
     try {
-        client.findBlocks([&client, &fishing_workstation_position, &farming_workstation_position](const Block *block, const Position position) -> bool {
-            if (block->GetBlockstate()->GetName() == "minecraft:barrel" && client.getBlock(position + Position(0, -1, 0))->GetBlockstate()->GetName() == "minecraft:gold_block") {
-                fishing_workstation_position = position;
-                LOG_INFO("Fishing workstation found at: " << fishing_workstation_position << "!");
-            } else if (block->GetBlockstate()->GetName() == "minecraft:composter" && client.getBlock(position + Position(0, -1, 0))->GetBlockstate()->GetName() == "minecraft:gold_block") {
-                farming_workstation_position = position;
-                LOG_INFO("Farming workstation found at: " << farming_workstation_position << "!");
+        client.findBlocks([&client](const Block *block, const Position position, std::shared_ptr<World> world) -> bool {
+            Position down = position + Position(0, -1, 0);
+
+            if (block->GetBlockstate()->GetName() == "minecraft:barrel" && world->GetBlock(down)->GetBlockstate()->GetName() == "minecraft:gold_block") {
+                LOG_INFO("Fishing workstation found at: " << position << "!");
+            } else if (block->GetBlockstate()->GetName() == "minecraft:composter" && world->GetBlock(down)->GetBlockstate()->GetName() == "minecraft:gold_block") {
+                LOG_INFO("Farming workstation found at: " << position << "!");
             }
 
             return false;
         }, search_radius);
-    } catch(std::exception &e) {
+    } catch(std::range_error &e) {
         LOG_ERROR("Error while searching workstations: " << e.what());
 
         return Status::Failure;
@@ -26,6 +28,7 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient& client, const in
 
 
     b.Set("FarmingTasks.initialized", true);
+    LOG_INFO("Blocks initialized");
 
     return Status::Success;
 }
