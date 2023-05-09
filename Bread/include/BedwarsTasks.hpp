@@ -9,6 +9,6 @@ namespace BedwarsTasks {
 /// @return Success if the bed found, false otherwise
 Botcraft::Status InitializeBlocks(AdvancedClient& client, int search_radius);
 
-std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> createTree();
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree();
 
 }

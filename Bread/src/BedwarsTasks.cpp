@@ -27,7 +27,7 @@ Status BedwarsTasks::InitializeBlocks(AdvancedClient& client, int search_radius)
 
 }
 
-std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> BedwarsTasks::createTree() {
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> BedwarsTasks::CreateTree() {
     return Botcraft::Builder<AdvancedClient>()
         .sequence()
             .selector()

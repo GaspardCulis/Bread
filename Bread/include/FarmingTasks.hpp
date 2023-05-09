@@ -22,4 +22,5 @@ Botcraft::Status Fish(AdvancedClient& client, const std::string& block_pos_black
 /// @return Success if blocks are broken, items gathered and crops replanted, Failure otherwise
 Botcraft::Status CollectCropsAndReplant(Botcraft::BehaviourClient& client, const std::string& block_pos_blackboard, const int crops_radius = 8);
 
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree();
 }

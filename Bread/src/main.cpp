@@ -1,13 +1,14 @@
 #include <iostream>
 #include <botcraft/AI/SimpleBehaviourClient.hpp>
+#include <botcraft/AI/BehaviourTree.hpp>
 #include <botcraft/AI/Tasks/AllTasks.hpp>
 #include <unistd.h>
 #include <string>
 #include "BedwarsTasks.hpp"
+#include "FarmingTasks.hpp"
 #include "AdvancedClient.hpp"
 
 using namespace std;
-
 
 int main(int argc, char* argv[])
 {
@@ -17,7 +18,7 @@ int main(int argc, char* argv[])
 
     sleep(5);
 
-    client.SetBehaviourTree(BedwarsTasks::createTree());
+    client.SetBehaviourTree(FarmingTasks::CreateTree());
     client.StartBehaviour();
     client.RunBehaviourUntilClosed();
 
@@ -26,7 +27,5 @@ int main(int argc, char* argv[])
         sleep(1);
     }
         
-
-    // Don't connect or anything because this is a minimal example
     return 0;
 }

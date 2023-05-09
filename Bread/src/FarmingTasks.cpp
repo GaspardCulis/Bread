@@ -20,5 +20,24 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient& client, const in
         }, search_radius);
     } catch(std::exception &e) {
         LOG_ERROR("Error while searching workstations: " << e.what());
+
+        return Status::Failure;
     }
+
+
+    b.Set("FarmingTasks.initialized", true);
+
+    return Status::Success;
+}
+
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTree() {
+    return Botcraft::Builder<AdvancedClient>()
+        .sequence()
+            .selector()
+                .leaf(CheckBlackboardBoolData, "FarmingTasks.initialized")
+                .sequence()
+                    .leaf(FarmingTasks::InitializeBlocks, 100)
+                .end()
+            .end()
+        .end();
 }
