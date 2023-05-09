@@ -21,17 +21,18 @@ const shared_ptr<Entity> AdvancedClient::getEntity(int id) const {
     return entity_manager->GetEntity(id);
 }
 
-vector<Vector3<int>> AdvancedClient::findBlocks(std::function<bool(const Block *block)> match_function, int search_radius, int max_results) const {
+vector<Vector3<int>> AdvancedClient::findBlocks(std::function<bool(const Block *block)> match_function, const int search_radius, const int max_results, const std::optional<Position> origin) const {
     vector<Vector3<int>> out;
 
 
     std::shared_ptr<World> world = this->GetWorld();
     std::lock_guard<std::mutex> lock_world(world->GetMutex());
 
-    Position my_pos = getPosition();
+    
+    Position origin_pos = origin.value_or(getPosition());
 
-    const Vector3<int> min_pos(my_pos.x - search_radius, max(my_pos.y - search_radius, world->GetMinY()), my_pos.z - search_radius);
-    const Vector3<int> max_pos(my_pos.x + search_radius, min(my_pos.y + search_radius, world->GetHeight()), my_pos.z + search_radius);
+    const Vector3<int> min_pos(origin_pos.x - search_radius, max(origin_pos.y - search_radius, world->GetMinY()), origin_pos.z - search_radius);
+    const Vector3<int> max_pos(origin_pos.x + search_radius, min(origin_pos.y + search_radius, world->GetHeight()), origin_pos.z + search_radius);
     Vector3<int> current;
     
     int nb_checks = 0;
@@ -64,16 +65,16 @@ end:
     return out;
 }
 
-vector<Vector3<int>> AdvancedClient::findBlocks(const string block_name, int search_radius, int max_results) const {
+vector<Vector3<int>> AdvancedClient::findBlocks(const string block_name, const int search_radius, const int max_results, const std::optional<Position> origin) const {
     return this->findBlocks(
         [block_name](const Block *block) -> bool {
             return block->GetBlockstate()->GetName() == block_name;
-        }, search_radius, max_results);
+        }, search_radius, max_results, origin);
 }
 
-Vector3<int> AdvancedClient::findNearestBlock(std::function<bool(const Block *block)> match_function, int search_radius) const {
-    vector<Vector3<int>> blocks = this->findBlocks(match_function, search_radius);
-    sortPositionsFromClosest(blocks);
+Vector3<int> AdvancedClient::findNearestBlock(std::function<bool(const Block *block)> match_function, const int search_radius, const std::optional<Position> origin) const {
+    vector<Vector3<int>> blocks = this->findBlocks(match_function, search_radius, 10, origin);
+    sortPositionsFromClosest(blocks, origin.value_or(getPosition()));
     if (blocks.size() > 0) {
         return blocks[0];
     } else {
@@ -81,11 +82,11 @@ Vector3<int> AdvancedClient::findNearestBlock(std::function<bool(const Block *bl
     }
 }
 
-Vector3<int> AdvancedClient::findNearestBlock(const string block_name, int search_radius) const {
+Vector3<int> AdvancedClient::findNearestBlock(const string block_name, const int search_radius, const std::optional<Position> origin) const {
     return this->findNearestBlock(
         [block_name](const Block *block) -> bool {
             return block->GetBlockstate()->GetName() == block_name;
-        }, search_radius);
+        }, search_radius, origin);
 }
 
 vector<int> AdvancedClient::findEntities(std::function<bool(const std::shared_ptr<Entity> entity)> match_function, int max_results) const {
@@ -111,10 +112,9 @@ vector<int> AdvancedClient::findEntities(const EntityType entity_type, int max_r
         }, max_results);
 }
 
-void AdvancedClient::sortPositionsFromClosest(vector<Vector3<int>> &positions) const {
-    const Vector3<double> my_pos = getPosition();
-    std::sort(positions.begin(), positions.end(), [my_pos](const Vector3<int> &a, const Vector3<int> &b) -> bool {
-        return a.SqrDist(my_pos) < b.SqrDist(my_pos);
+void AdvancedClient::sortPositionsFromClosest(vector<Vector3<int>> &positions, const Vector3<double> origin) const {
+    std::sort(positions.begin(), positions.end(), [origin](const Vector3<int> &a, const Vector3<int> &b) -> bool {
+        return a.SqrDist(origin) < b.SqrDist(origin);
     });
 }
 

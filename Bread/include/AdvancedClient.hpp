@@ -36,10 +36,13 @@ public:
     const shared_ptr<Entity> getEntity(int id) const;
 
     /**
-     * Finds all the blocks for which the match_function callback returned true in a certain radius. 
-     * The search will stop and return when the number of found blocks equals max_results.
+     * @brief Finds all the blocks for which the match_function callback returned true in a certain radius. 
+     * @param match_function If this function given the current Block returns true, the Block will be added to the result
+     * @param search_radius The maximum distance for the search, it's a cube not a sphere. 
+     * @param max_results The maximum results for the search, the function returns when reached.
+     * @param origin The search radius center, defaults to the player position
     */
-    vector<Vector3<int>> findBlocks(std::function<bool(const Block *block)> match_function, int search_radius = 64, int max_results = -1) const;
+    vector<Vector3<int>> findBlocks(std::function<bool(const Block *block)> match_function, const int search_radius = 64, const int max_results = -1, const std::optional<Position> origin = std::nullopt) const;
     
     /**
      * Finds all the blocks matching the block_name (example: "minecraft:white_stained_glass", the minecraft: is required), in a certain radius. 
@@ -47,14 +50,14 @@ public:
      * 
      * Alias for findBlocks(std::function<bool(const Block *block)>, int, int)
     */
-    vector<Vector3<int>> findBlocks(const string block_name, int search_radius = 64, int max_results = -1) const;
+    vector<Vector3<int>> findBlocks(const string block_name, const int search_radius = 64, const int max_results = -1, const std::optional<Position> origin = std::nullopt) const;
 
     /**
      * Finds the nearest block for which the match_function calback returned true in a certain radius.
      * 
      * It gets all the surrounding blocks with findBlocks(std::function<bool(const Block *block)>, int, int), sorts the positions with sortPositionsFromNearest(vector<Vector3<int>>) and returns the first result, throws std::range_error if not found.
     */
-    Vector3<int> findNearestBlock(std::function<bool(const Block *block)> match_function, int search_radius = 64) const;
+    Vector3<int> findNearestBlock(std::function<bool(const Block *block)> match_function, const int search_radius = 64, const std::optional<Position> origin = std::nullopt) const;
 
     /**
      * Finds the nearest block matching the block_name (example: "minecraft:white_stained_glass", the minecraft: is required), in a certain radius. 
@@ -63,7 +66,7 @@ public:
      * 
      * Alias for findNearestBlock(std::function<bool(const Block *block)>, int)
     */
-    Vector3<int> findNearestBlock(const string block_name, int search_radius = 64) const;
+    Vector3<int> findNearestBlock(const string block_name, const int search_radius = 64, const std::optional<Position> origin = std::nullopt) const;
 
     /**
      * Finds all the blocks for which the match_function callback returned true. 
@@ -78,11 +81,11 @@ public:
     vector<int> findEntities(const EntityType type, int max_results = -1) const;
 
     /**
-     * Sorts a given vector of Positions from the nearest to the furthest from the client.
+     * Sorts a given vector of Positions from the nearest to the furthest from the origin.
      * 
      * Uses std::sort with a custom comparator.
     */
-    void sortPositionsFromClosest(vector<Vector3<int>> &positions) const;
+    void sortPositionsFromClosest(vector<Vector3<int>> &positions, const Vector3<double> origin) const;
     
     virtual ~AdvancedClient();
 };
