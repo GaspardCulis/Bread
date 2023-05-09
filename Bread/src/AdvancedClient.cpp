@@ -77,7 +77,7 @@ Vector3<int> AdvancedClient::findNearestBlock(std::function<bool(const Block *bl
     if (blocks.size() > 0) {
         return blocks[0];
     } else {
-        return NULL;
+        throw std::range_error("Couldn't find requested block");
     }
 }
 

@@ -52,14 +52,14 @@ public:
     /**
      * Finds the nearest block for which the match_function calback returned true in a certain radius.
      * 
-     * It gets all the surrounding blocks with findBlocks(std::function<bool(const Block *block)>, int, int), sorts the positions with sortPositionsFromNearest(vector<Vector3<int>>) and returns the first result.
+     * It gets all the surrounding blocks with findBlocks(std::function<bool(const Block *block)>, int, int), sorts the positions with sortPositionsFromNearest(vector<Vector3<int>>) and returns the first result, throws std::range_error if not found.
     */
     Vector3<int> findNearestBlock(std::function<bool(const Block *block)> match_function, int search_radius = 64) const;
 
     /**
      * Finds the nearest block matching the block_name (example: "minecraft:white_stained_glass", the minecraft: is required), in a certain radius. 
      * 
-     * It gets all the surrounding blocks with findBlocks(const string, int, int), sorts the positions with sortPositionsFromNearest(vector<Vector3<int>>) and returns the first result.
+     * It gets all the surrounding blocks with findBlocks(const string, int, int), sorts the positions with sortPositionsFromNearest(vector<Vector3<int>>) and returns the first result, throws std::range_error if not found.
      * 
      * Alias for findNearestBlock(std::function<bool(const Block *block)>, int)
     */

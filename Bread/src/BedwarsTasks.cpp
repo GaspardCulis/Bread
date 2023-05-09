@@ -8,19 +8,19 @@ using namespace ProtocolCraft;
 Status InitializeBlocks(AdvancedClient& client, int search_radius) {
     Blackboard& b = client.GetBlackboard();
 
-    Vector3<int> bed_position = client.findNearestBlock([](const Block *block) -> bool {
-        const string suffix = "_bed";
-        const string& block_name = block->GetBlockstate()->GetName();
-        return block_name.size() >= suffix.size() && 0 == block_name.compare(block_name.size()-suffix.size(), suffix.size(), suffix);
-    }, search_radius);
+    try {
+        Vector3<int> bed_position = client.findNearestBlock([](const Block *block) -> bool {
+            const string suffix = "_bed";
+            const string& block_name = block->GetBlockstate()->GetName();
+            return block_name.size() >= suffix.size() && 0 == block_name.compare(block_name.size()-suffix.size(), suffix.size(), suffix);
+        }, search_radius);
 
-    if (bed_position == NULL) {
+        b.Set("bed_position", bed_position);
+        LOG_INFO("Found bed at " << bed_position);
+    } catch (const std::exception& e) {
+        LOG_ERROR("Error finding bed: " << e.what());
         return Status::Failure;
     }
-
-    b.Set("bed_position", bed_position);
-    LOG_INFO("Found bed at " << bed_position);
-
     b.Set("BedwarsTasks.initialized", true);
 
     return Status::Success;
@@ -36,6 +36,5 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> createTree() {
                     .leaf(InitializeBlocks, 100)
                 .end()
             .end()
-        .end()
-    .build();
+        .end();
 }
