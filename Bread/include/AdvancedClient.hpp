@@ -42,7 +42,7 @@ public:
      * @param max_results The maximum results for the search, the function returns when reached.
      * @param origin The search radius center, defaults to the player position
     */
-    vector<Vector3<int>> findBlocks(std::function<bool(const Block *block)> match_function, const int search_radius = 64, const int max_results = -1, const std::optional<Position> origin = std::nullopt) const;
+    vector<Vector3<int>> findBlocks(std::function<bool(const Block *block, const Position& position)> match_function, const int search_radius = 64, const int max_results = -1, const std::optional<Position> origin = std::nullopt) const;
     
     /**
      * Finds all the blocks matching the block_name (example: "minecraft:white_stained_glass", the minecraft: is required), in a certain radius. 
@@ -57,7 +57,7 @@ public:
      * 
      * It gets all the surrounding blocks with findBlocks(std::function<bool(const Block *block)>, int, int), sorts the positions with sortPositionsFromNearest(vector<Vector3<int>>) and returns the first result, throws std::range_error if not found.
     */
-    Vector3<int> findNearestBlock(std::function<bool(const Block *block)> match_function, const int search_radius = 64, const std::optional<Position> origin = std::nullopt) const;
+    Vector3<int> findNearestBlock(std::function<bool(const Block *block, const Position& position)> match_function, const int search_radius = 64, const std::optional<Position> origin = std::nullopt) const;
 
     /**
      * Finds the nearest block matching the block_name (example: "minecraft:white_stained_glass", the minecraft: is required), in a certain radius. 
