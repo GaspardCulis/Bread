@@ -6,12 +6,15 @@ set(SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/AdvancedClient.cpp
     ${PROJECT_SOURCE_DIR}/src/BedwarsTasks.cpp
     ${PROJECT_SOURCE_DIR}/src/FarmingTasks.cpp
+    ${PROJECT_SOURCE_DIR}/src/AdvancedTasks.cpp
 )
 
 # Declaring my headers (this is not strictly 
 # necessary, but this will add them to the file
 # structure in visual on windows)
 set(HDR_FILES 
+
+    ${PROJECT_SOURCE_DIR}/include/AdvancedTasks.hpp
     ${PROJECT_SOURCE_DIR}/include/BedwarsTasks.hpp
     ${PROJECT_SOURCE_DIR}/include/FarmingTasks.hpp
     ${PROJECT_SOURCE_DIR}/include/AdvancedClient.hpp
