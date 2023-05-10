@@ -4,17 +4,16 @@
 #include <botcraft/AI/Tasks/AllTasks.hpp>
 #include <unistd.h>
 #include <string>
-#include "BedwarsTasks.hpp"
 #include "FarmingTasks.hpp"
 #include "AdvancedTasks.hpp"
 #include "AdvancedClient.hpp"
 
 using namespace std;
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     AdvancedClient client;
-    client.Connect("serv_jaajmc.aternos.me", "Maurice");
+    client.Connect("localhost", "Maurice");
     client.SetAutoRespawn(true);
 
     sleep(5);
@@ -27,6 +26,6 @@ int main(int argc, char* argv[])
     {
         sleep(1);
     }
-        
+
     return 0;
 }
