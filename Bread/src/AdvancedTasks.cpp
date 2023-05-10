@@ -15,7 +15,7 @@ Botcraft::Status AdvancedTasks::DigAndCollect(AdvancedClient& client, const Posi
 
     Position entity_position;
     int entity_id;
-    vector<int> entities = client.findEntities(
+    std::set<int> entities = client.findEntities(
         [item_name, &entity_position, &entity_id](const std::shared_ptr<Entity> entity) -> bool {
             if (entity->GetType() == EntityType::ItemEntity) {
                 std::shared_ptr<ItemEntity> item = std::static_pointer_cast<ItemEntity>(entity);

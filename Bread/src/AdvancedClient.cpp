@@ -92,15 +92,15 @@ Vector3<int> AdvancedClient::findNearestBlock(const string block_name, const int
         }, search_radius, origin);
 }
 
-vector<int> AdvancedClient::findEntities(std::function<bool(const std::shared_ptr<Entity> entity)> match_function, int max_results) const {
-    vector<int> out;
+std::set<int> AdvancedClient::findEntities(std::function<bool(const std::shared_ptr<Entity> entity)> match_function, int max_results) const {
+    std::set<int> out;
 
     std::shared_ptr<EntityManager> entity_manager = this->GetEntityManager();
     std::lock_guard<std::mutex> lock_entity_manager(entity_manager->GetMutex());
 
     for (const auto& e : entity_manager->GetEntities()) {
         if (match_function(e.second)) {
-            out.push_back(e.first);
+            out.insert(e.first);
             if (out.size() == max_results) break;
         }
     }
@@ -108,7 +108,7 @@ vector<int> AdvancedClient::findEntities(std::function<bool(const std::shared_pt
     return out;
 }
 
-vector<int> AdvancedClient::findEntities(const EntityType entity_type, int max_results) const {
+std::set<int> AdvancedClient::findEntities(const EntityType entity_type, int max_results) const {
     return this->findEntities(
         [entity_type](const std::shared_ptr<Entity> entity) -> bool {
             return entity->GetType() == entity_type;

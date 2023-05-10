@@ -76,13 +76,13 @@ public:
      * Finds all the blocks for which the match_function callback returned true. 
      * The search will stop and return when the number of found blocks equals max_results.
     */
-    vector<int> findEntities(std::function<bool(const std::shared_ptr<Entity> entity)> match_function, int max_results = -1) const;
+    std::set<int> findEntities(std::function<bool(const std::shared_ptr<Entity> entity)> match_function, int max_results = -1) const;
 
     /**
      * Finds all the entities with the specified EntityType
      * The search will stop and return when the number of found blocks equals max_results.
     */
-    vector<int> findEntities(const EntityType type, int max_results = -1) const;
+    std::set<int> findEntities(const EntityType type, int max_results = -1) const;
 
     /**
      * @brief Finds the item slot in the client's inventory for which the match_function callback returned true.
