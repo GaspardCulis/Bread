@@ -1,4 +1,7 @@
 #include "AdvancedClient.hpp"
+#include "botcraft/Game/Inventory/InventoryManager.hpp"
+#include "botcraft/Game/Inventory/Window.hpp"
+#include "botcraft/Game/AssetsManager.hpp"
 
 using namespace std::chrono;
 using namespace Botcraft;
@@ -110,6 +113,38 @@ vector<int> AdvancedClient::findEntities(const EntityType entity_type, int max_r
         [entity_type](const std::shared_ptr<Entity> entity) -> bool {
             return entity->GetType() == entity_type;
         }, max_results);
+}
+
+short AdvancedClient::getItemSlotInInventory(std::function<bool(short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item* item)> match_function) {
+    std::shared_ptr<InventoryManager> inventory_manager = this->GetInventoryManager();
+    std::lock_guard<std::mutex> inventory_lock(inventory_manager->GetMutex());
+
+    const std::map<short, ProtocolCraft::Slot>& slots = inventory_manager->GetPlayerInventory()->GetSlots();
+    for (auto it = slots.begin(); it != slots.end(); ++it) {
+        if (it->first >= Window::INVENTORY_STORAGE_START &&
+            it->first < Window::INVENTORY_OFFHAND_INDEX &&
+            !it->second.IsEmptySlot())
+        {
+#if PROTOCOL_VERSION < 347
+            auto item = AssetsManager::getInstance().Items().at(it->second.GetBlockID()).at(static_cast<unsigned char>(it->second.GetItemDamage())).get();
+#else
+            auto item = AssetsManager::getInstance().Items().at(it->second.GetItemID()).get();
+#endif
+            if (match_function(it->first, it->second, item)) {
+                return it->first;
+            }
+        }
+    }
+
+    return -1;
+}
+
+short AdvancedClient::getItemSlotInInventory(const std::string item_name) {
+    return getItemSlotInInventory(
+        [item_name](short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item* item) -> bool {
+            return item->GetName() == item_name;
+        }
+    );
 }
 
 void AdvancedClient::sortPositionsFromClosest(vector<Vector3<int>> &positions, const Vector3<double> origin) const {

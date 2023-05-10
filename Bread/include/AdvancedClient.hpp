@@ -8,6 +8,7 @@
 #include <botcraft/Game/World/World.hpp>
 #include <botcraft/Utilities/Logger.hpp>
 #include <botcraft/AI/Tasks/AllTasks.hpp>
+#include <botcraft/Game/Inventory/Item.hpp>
 #include <time.h>
 #include <bits/stdc++.h>
 #include <chrono>
@@ -84,11 +85,26 @@ public:
     vector<int> findEntities(const EntityType type, int max_results = -1) const;
 
     /**
+     * @brief Finds the item slot in the client's inventory for which the match_function callback returned true.
+     * @param match_function This function given the current slot returns true if this is the required item.
+     * @returns The slod id of the target item, -1 if not found
+    */
+    short getItemSlotInInventory(std::function<bool(short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item* item)> match_function);
+
+    /**
+     * @brief Finds the item slot in the client's inventory matching the block_name.
+     * @param item_name The target item
+     * @return The target item slotId in the client's inventory, -1 if not found.
+     * Alias for getItemSlotInInventory(std::function<bool(short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item)> match_function)
+    */
+    short getItemSlotInInventory(const std::string item_name);
+
+    /**
      * Sorts a given vector of Positions from the nearest to the furthest from the origin.
      * 
      * Uses std::sort with a custom comparator.
     */
     void sortPositionsFromClosest(vector<Vector3<int>> &positions, const Vector3<double> origin) const;
-    
+
     virtual ~AdvancedClient();
 };
