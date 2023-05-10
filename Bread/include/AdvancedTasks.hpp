@@ -4,7 +4,7 @@
 
 namespace AdvancedTasks {
 
-/// @brief Digs a given block and tries to collect the drop. Only pathfinds to the item drop!
+/// @brief Digs a given block and tries to collect the drop. Pathfinds to the block and the item drop.
 /// @param client The client performing the action
 /// @param position The block position
 /// @param item_name The drop item name
