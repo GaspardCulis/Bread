@@ -6,6 +6,7 @@
 #include <string>
 #include "BedwarsTasks.hpp"
 #include "FarmingTasks.hpp"
+#include "AdvancedTasks.hpp"
 #include "AdvancedClient.hpp"
 
 using namespace std;

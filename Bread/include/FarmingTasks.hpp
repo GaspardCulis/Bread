@@ -13,7 +13,7 @@ Botcraft::Status InitializeBlocks(AdvancedClient& client, const int radius = 128
 /// @brief Go fishing
 /// @param client The client performing the action
 /// @return Returns success if fish has been aquired
-Botcraft::Status Fish(AdvancedClient& client, const std::string& block_pos_blackboard);
+Botcraft::Status Fish(AdvancedClient& client);
 
 /// @brief Break carrots/potatoes/wheat/pumpkin/melon, collect the items, replant
 /// @param client The client performing the action
