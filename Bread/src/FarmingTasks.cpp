@@ -3,6 +3,28 @@
 #include "botcraft/Game/Entities/entities/projectile/FishingHookEntity.hpp"
 #include "botcraft/Network/NetworkManager.hpp"
 
+const vector<string> need_fishing_rod_messages({"Yo, hook me up with a fishing rod, cuz I ain't catchin' nothin' with my bare hands.",
+                                                "Listen up, homie, I need a fishing rod like a fish needs water.",
+                                                "Hey, boss, can you toss me a fishing rod? I'm tryna reel in some big fish, you feel me?",
+                                                "Ayo, let me get a rod, I'm tryna get my fish on, ya dig?",
+                                                "Yo, I need a rod like a rapper needs a mic, it's my tool for success.",
+                                                "I'm like a fish outta water without a fishing rod, you gotta help me out.",
+                                                "Can't be a boss without a fishing rod, it's my key to the sea.",
+                                                "Hey, can you lend me a fishing rod? I promise to return it in one piece, unless I catch a big one.",
+                                                "Gimme a fishing rod and watch me work the waters like a pro.",
+                                                "I need a fishing rod like a shark needs teeth, it's essential to my survival."});
+
+const vector<string> thanks_fishing_rod_messages({"Yo, much love and respect for the fishing rod, my man. You're a true G.",
+                                                  "Thanks for the hook up with the fishing rod, my dude. You're a real friend.",
+                                                  "Hey, big thanks for the fishing rod, my guy. You're a lifesaver.",
+                                                  "I appreciate you getting me the fishing rod, homie. You're the real MVP.",
+                                                  "Thank you for the fishing rod, boss. You always come through in clutch.",
+                                                  "Can't thank you enough for the fishing rod, bro. You're a legend.",
+                                                  "You're the man for giving me the fishing rod, my friend. Let's catch some big ones together.",
+                                                  "Thanks for the fishing rod, my guy. You're a true gangsta of the sea.",
+                                                  "I owe you big time for the fishing rod, homie. You're a true player.",
+                                                  "Appreciate the fishing rod, boss. You always know how to keep a G happy."});
+
 Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const int search_radius)
 {
     Botcraft::Blackboard &b = client.GetBlackboard();
@@ -89,8 +111,17 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     if (SetItemInHand(client, "minecraft:fishing_rod") == Status::Failure)
     {
         LOG_WARNING("Couldn't equip fishing_rod");
-        cout.flush();
+        if (client.sendOTM(need_fishing_rod_messages[rand() % need_fishing_rod_messages.size()], "need_fishing_rod"))
+        {
+            b.Set<bool>("FarmingTasks::Fish.asked_fishing_rod", true);
+        }
         return Status::Failure;
+    }
+    if (b.Get<bool>("FarmingTasks::Fish.asked_fishing_rod", false))
+    {
+        client.SendChatMessage(thanks_fishing_rod_messages[rand() % thanks_fishing_rod_messages.size()]);
+        client.resetOTM("need_fishing_rod");
+        b.Erase("FarmingTasks::Fish.asked_fishing_rod");
     }
 
     std::set<int> old_fishing_hooks = client.findEntities(EntityType::FishingHook);
@@ -144,7 +175,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
 
     while (1)
     {
-        client.Yield();
 
         std::shared_ptr<FishingHookEntity> e = std::dynamic_pointer_cast<FishingHookEntity>(client.getEntity(fishing_hook_eid));
         if (e->GetDataBiting())

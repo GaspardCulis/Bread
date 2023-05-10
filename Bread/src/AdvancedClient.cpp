@@ -178,6 +178,30 @@ short AdvancedClient::getItemSlotInInventory(const std::string item_name)
         });
 }
 
+bool AdvancedClient::sendOTM(const std::string message, const std::optional<std::string> message_identifier)
+{
+    std::size_t msg_hash = std::hash<std::string>{}(message_identifier.value_or(message));
+
+    Blackboard &b = this->GetBlackboard();
+    char buffer[100];
+    sprintf(buffer, "OTM.%d", msg_hash);
+    if (!b.Get<bool>(buffer, false))
+    {
+        this->SendChatMessage(message);
+        b.Set<bool>(buffer, true);
+    }
+}
+
+void AdvancedClient::resetOTM(const std::string message_identifier)
+{
+    std::size_t msg_hash = std::hash<std::string>{}(message_identifier);
+
+    Blackboard &b = this->GetBlackboard();
+    char buffer[100];
+    sprintf(buffer, "OTM.%d", msg_hash);
+    b.Erase(buffer);
+}
+
 void AdvancedClient::sortPositionsFromClosest(vector<Vector3<int>> &positions, const Vector3<double> origin) const
 {
     std::sort(positions.begin(), positions.end(), [origin](const Vector3<int> &a, const Vector3<int> &b) -> bool
