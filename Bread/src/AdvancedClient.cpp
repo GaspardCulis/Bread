@@ -44,7 +44,6 @@ vector<Vector3<int>> AdvancedClient::findBlocks(std::function<bool(const Block *
     auto start = high_resolution_clock::now();
     current.y = min_pos.y;
 
-    LOG_INFO("Starting findBlocks - 5");
     while (current.y <= max_pos.y)
     {
         current.x = min_pos.x;

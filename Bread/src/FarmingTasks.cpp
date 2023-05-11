@@ -65,21 +65,24 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
 {
     LOG_INFO("[Fish] Starting fishing task");
     Blackboard &b = client.GetBlackboard();
+    std::shared_ptr<EntityManager> entity_manager = client.GetEntityManager();
 
+    // Get fishing workstation position
     const Position &workstation_pos = b.Get<Position>("FarmingTasks.fishing_workstation_pos", Position(0));
     if (workstation_pos == Position(0))
     {
-        LOG_WARNING("Called Fish task with an un-initialized blackboard workstation pos.");
+        LOG_WARNING("[Fish] Called Fish task with an un-initialized blackboard workstation pos.");
         return Status::Failure;
     }
 
     LOG_INFO("[Fish] Pathfinding to workstation");
     if (GoTo(client, workstation_pos, 2, 2) == Status::Failure)
     {
-        LOG_WARNING("Couldn't pathfind to fishing workstation");
+        LOG_WARNING("[Fish] Couldn't pathfind to fishing workstation");
         return Status::Failure;
     }
 
+    // Calculate average water position to throw hook at
     LOG_INFO("[Fish] Calculating average water position");
     Vector3<double> average_water_position;
     int nb_water = 0;
@@ -110,7 +113,7 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     // Select fishing_rod
     if (SetItemInHand(client, "minecraft:fishing_rod") == Status::Failure)
     {
-        LOG_WARNING("Couldn't equip fishing_rod");
+        LOG_WARNING("[Fish] Couldn't equip fishing_rod");
         if (client.sendOTM(need_fishing_rod_messages[rand() % need_fishing_rod_messages.size()], "need_fishing_rod"))
         {
             b.Set<bool>("FarmingTasks::Fish.asked_fishing_rod", true);
@@ -127,6 +130,7 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     std::set<int> old_fishing_hooks = client.findEntities(EntityType::FishingHook);
     std::set<int> fishing_hooks;
     // Start fishing
+    LOG_INFO("[Fish] Starting fishing");
     std::shared_ptr<NetworkManager> network_manager = client.GetNetworkManager();
     std::shared_ptr<ProtocolCraft::ServerboundUseItemPacket> use_item_msg = std::make_shared<ProtocolCraft::ServerboundUseItemPacket>();
 
@@ -146,7 +150,7 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     {
         if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() >= 5000)
         {
-            LOG_WARNING("Error waiting for new fishing hook (Timeout).");
+            LOG_WARNING("[Fish] Error waiting for new fishing hook (Timeout).");
             return Status::Failure;
         }
 
@@ -156,7 +160,7 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
 
     if (old_fishing_hooks.size() > fishing_hooks.size())
     {
-        LOG_WARNING("More old fishing hooks than new, can't find mine!");
+        LOG_WARNING("[Fish] More old fishing hooks than new, can't find mine!");
         return Status::Failure;
     }
 
@@ -167,20 +171,30 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
 
     if (fishing_hooks.size() != 1)
     {
-        LOG_WARNING("Can't find my fishing hook!");
+        LOG_WARNING("[Fish] Can't find my fishing hook!");
         return Status::Failure;
     }
     int fishing_hook_eid = *(fishing_hooks.begin());
+    
     // Wait for bite (mdr)
+    LOG_INFO("[Fish] Started fishing, waiting for bite");
 
     while (1)
     {
-
-        std::shared_ptr<FishingHookEntity> e = std::dynamic_pointer_cast<FishingHookEntity>(client.getEntity(fishing_hook_eid));
-        if (e->GetDataBiting())
         {
-            break;
+            std::lock_guard<std::mutex> lock(entity_manager->GetMutex());
+            std::shared_ptr<Entity> e = entity_manager->GetEntity(fishing_hook_eid);
+            if (e == nullptr) {
+                LOG_WARNING("[Fish] Fishing hook despawned");
+                return Status::Failure;
+            }
+            if (std::dynamic_pointer_cast<FishingHookEntity>(e)->GetDataBiting())
+            {
+                break;
+            }
         }
+
+        client.Yield();
     }
 
     // Hook back
