@@ -1,4 +1,5 @@
 #include "FarmingTasks.hpp"
+#include "AdvancedTasks.hpp"
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
 #include "botcraft/Game/Entities/entities/projectile/FishingHookEntity.hpp"
 #include "botcraft/Network/NetworkManager.hpp"
@@ -40,7 +41,7 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
             if (block->GetBlockstate()->GetName() == "minecraft:barrel" && world->GetBlock(down)->GetBlockstate()->GetName() == "minecraft:gold_block") {
                 b.Set("FarmingTasks.fishing_workstation_pos", position);
                 LOG_INFO("Fishing workstation found at: " << position << "!");
-            } else if (block->GetBlockstate()->GetName() == "minecraft:composter" && world->GetBlock(down)->GetBlockstate()->GetName() == "minecraft:gold_block") {
+            } else if (block->GetBlockstate()->GetName() == "minecraft:composter") {
                 b.Set("FarmingTasks.farming_workstation_pos", position);
                 LOG_INFO("Farming workstation found at: " << position << "!");
             }
@@ -175,7 +176,7 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
         return Status::Failure;
     }
     int fishing_hook_eid = *(fishing_hooks.begin());
-    
+
     // Wait for bite (mdr)
     LOG_INFO("[Fish] Started fishing, waiting for bite");
 
@@ -184,7 +185,8 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
         {
             std::lock_guard<std::mutex> lock(entity_manager->GetMutex());
             std::shared_ptr<Entity> e = entity_manager->GetEntity(fishing_hook_eid);
-            if (e == nullptr) {
+            if (e == nullptr)
+            {
                 LOG_WARNING("[Fish] Fishing hook despawned");
                 return Status::Failure;
             }
@@ -209,9 +211,66 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     return Status::Success;
 }
 
-Botcraft::Status FarmingTasks::CollectCropsAndReplant(Botcraft::BehaviourClient &client, const std::string &block_pos_blackboard, const int crops_radius)
+Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, const int crops_radius)
 {
-    return Botcraft::Status();
+    LOG_INFO("[Farming] Starting farming task");
+    Blackboard &b = client.GetBlackboard();
+
+    // Get fishing workstation position
+    const Position &workstation_pos = b.Get<Position>("FarmingTasks.farming_workstation_pos", Position(0));
+    if (workstation_pos == Position(0))
+    {
+        LOG_WARNING("[Farming] Called farming task with an un-initialized blackboard workstation pos.");
+        return Status::Failure;
+    }
+
+    LOG_INFO("[Farming] Pathfinding to workstation");
+    if (GoTo(client, workstation_pos, 2, 2) == Status::Failure)
+    {
+        LOG_WARNING("[Farming] Couldn't pathfind to fishing workstation");
+        return Status::Failure;
+    }
+
+    LOG_INFO("[Farming] Searching grown crops");
+    vector<std::pair<string, Position>> grown_crops;
+    vector<Position> _ = client.findBlocks([&grown_crops](const Block *block, const Position position, std::shared_ptr<World> _) -> bool
+                                           {
+                                                std::string block_name = block->GetBlockstate()->GetName();
+                                                if (
+                                                    (
+                                                        block_name == "minecraft:carrots" || 
+                                                        block_name == "minecraft:potatoes" ||
+                                                        block_name == "minecraft:wheat"
+                                                    ) && block->GetBlockstate()->GetVariableValue("age") == "7") 
+                                                {
+                                                    std::pair<string, Position> crop_pair;
+                                                    crop_pair.second = position;
+                                                    if (block_name == "minecraft:wheat") {
+                                                        crop_pair.first = "minecraft:wheat_seeds";
+                                                    } else {
+                                                        crop_pair.first = block_name;
+                                                    }
+                                                    grown_crops.push_back(crop_pair);
+                                                }
+                                                return false; },
+                                           16);
+
+    for (auto crop : grown_crops)
+    {
+        // Collect
+        LOG_INFO("[Farming] Digging " << crop.first << " at " << crop.second);
+        if (AdvancedTasks::DigAndCollect(client, crop.second) == Status::Failure)
+        {
+            LOG_WARNING("[Farming] Couldn't collect crop drops for " << crop.first);
+        }
+        // Replant
+        if (PlaceBlock(client, crop.first, crop.second, Direction::Up, true) == Status::Failure)
+        {
+            LOG_WARNING("[Farming] Couldn't replant " << crop.first);
+        }
+    }
+
+    return Status::Success;
 }
 
 std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTree()
@@ -224,6 +283,6 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTre
         .leaf(FarmingTasks::InitializeBlocks, 100)
         .end()
         .end()
-        .leaf(Fish)
+        .leaf(CollectCropsAndReplant, 8)
         .end();
 }

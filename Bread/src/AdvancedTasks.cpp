@@ -45,7 +45,7 @@ Botcraft::Status AdvancedTasks::DigAndCollect(AdvancedClient &client, const Posi
         return Status::Failure;
     }
 
-    for (int i = 0; i < 50; ++i)
+    for (int i = 0; i < 10; ++i)
     {
         client.Yield();
     }

@@ -13,10 +13,11 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     AdvancedClient client;
-    client.Connect("localhost", "Maurice");
+    client.Connect("serv_jaajmc.aternos.me", "Maurice");
     client.SetAutoRespawn(true);
 
     sleep(5);
+    Botcraft::LogInventoryContent(client);
 
     client.SetBehaviourTree(FarmingTasks::CreateTree());
     client.StartBehaviour();
