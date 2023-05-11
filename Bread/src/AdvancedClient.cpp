@@ -8,8 +8,12 @@ using namespace Botcraft;
 
 Vector3<double> AdvancedClient::getPosition() const
 {
-    // std::lock_guard<std::mutex> lock_localplayer(this->GetEntityManager()->GetLocalPlayer()->GetMutex());
-    return this->GetEntityManager()->GetLocalPlayer()->GetPosition();
+    Vector3<double> my_pos;
+    {
+        std::lock_guard<std::mutex> lock_localplayer(this->GetEntityManager()->GetLocalPlayer()->GetMutex());
+        my_pos = this->GetEntityManager()->GetLocalPlayer()->GetPosition();
+    }
+    return my_pos;
 }
 
 const Block *AdvancedClient::getBlock(Vector3<int> position) const
