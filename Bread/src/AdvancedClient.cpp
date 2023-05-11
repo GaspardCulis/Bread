@@ -184,12 +184,14 @@ bool AdvancedClient::sendOTM(const std::string message, const std::optional<std:
 
     Blackboard &b = this->GetBlackboard();
     char buffer[100];
-    sprintf(buffer, "OTM.%d", msg_hash);
+    sprintf(buffer, "OTM.%ld", msg_hash);
     if (!b.Get<bool>(buffer, false))
     {
         this->SendChatMessage(message);
         b.Set<bool>(buffer, true);
+        return true;
     }
+    return false;
 }
 
 void AdvancedClient::resetOTM(const std::string message_identifier)
@@ -198,7 +200,7 @@ void AdvancedClient::resetOTM(const std::string message_identifier)
 
     Blackboard &b = this->GetBlackboard();
     char buffer[100];
-    sprintf(buffer, "OTM.%d", msg_hash);
+    sprintf(buffer, "OTM.%ld", msg_hash);
     b.Erase(buffer);
 }
 
