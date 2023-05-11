@@ -45,18 +45,13 @@ Botcraft::Status AdvancedTasks::DigAndCollect(AdvancedClient &client, const Posi
         return Status::Failure;
     }
 
-    for (int i = 0; i < 10; ++i)
-    {
-        client.Yield();
-    }
-
     std::set<int> entities = client.findEntities(
         [&position](const std::shared_ptr<Entity> entity) -> bool
         {
             if (entity->GetType() == EntityType::ItemEntity)
             {
                 std::shared_ptr<ItemEntity> item = std::static_pointer_cast<ItemEntity>(entity);
-                if (position.SqrDist(item->GetPosition()) <= 2)
+                if (position.SqrDist(item->GetPosition()) <= 4)
                 {
                     return true;
                 }

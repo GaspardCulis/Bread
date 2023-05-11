@@ -247,8 +247,13 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
                                                     crop_pair.second = position;
                                                     if (block_name == "minecraft:wheat") {
                                                         crop_pair.first = "minecraft:wheat_seeds";
+                                                    } else if (block_name == "minecraft:carrots") {
+                                                        crop_pair.first = "minecraft:carrot";
+                                                    } else if (block_name == "minecraft:potatoes") {
+                                                        crop_pair.first = "minecraft:potato";
                                                     } else {
-                                                        crop_pair.first = block_name;
+                                                        LOG_ERROR("Illegal block_name");
+                                                        exit(1);
                                                     }
                                                     grown_crops.push_back(crop_pair);
                                                 }
@@ -263,8 +268,13 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
         {
             LOG_WARNING("[Farming] Couldn't collect crop drops for " << crop.first);
         }
+        // Wait for a bit
+        for (int i = 0; i < 20; ++i)
+        {
+            client.Yield();
+        }
         // Replant
-        if (PlaceBlock(client, crop.first, crop.second, Direction::Up, true) == Status::Failure)
+        if (PlaceBlock(client, crop.first, crop.second) == Status::Failure)
         {
             LOG_WARNING("[Farming] Couldn't replant " << crop.first);
         }
