@@ -30,8 +30,6 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
 {
     Botcraft::Blackboard &b = client.GetBlackboard();
 
-    LOG_INFO("Initializing blocks");
-
     try
     {
         auto _ = client.findBlocks([&client, &b](const Block *block, const Position position, std::shared_ptr<World> world) -> bool
@@ -64,7 +62,6 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
 
 Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
 {
-    LOG_INFO("[Fish] Starting fishing task");
     Blackboard &b = client.GetBlackboard();
     std::shared_ptr<EntityManager> entity_manager = client.GetEntityManager();
 
@@ -76,7 +73,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
         return Status::Failure;
     }
 
-    LOG_INFO("[Fish] Pathfinding to workstation");
     if (GoTo(client, workstation_pos, 2, 2) == Status::Failure)
     {
         LOG_WARNING("[Fish] Couldn't pathfind to fishing workstation");
@@ -84,7 +80,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     }
 
     // Calculate average water position to throw hook at
-    LOG_INFO("[Fish] Calculating average water position");
     Vector3<double> average_water_position;
     int nb_water = 0;
     vector<Position> _ = client.findBlocks([&average_water_position, &nb_water](const Block *block, const Position position, std::shared_ptr<World> _) -> bool
@@ -96,7 +91,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
                                               return true; },
                                            16);
 
-    LOG_INFO("[Fish] Average water position is " << average_water_position);
     average_water_position.y = client.getPosition().y + 10;
 
     if (LookAt(client, average_water_position) == Status::Failure)
@@ -110,7 +104,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
         client.Yield();
     }
 
-    LOG_INFO("[Fish] Selecting fishing_rod");
     // Select fishing_rod
     if (SetItemInHand(client, "minecraft:fishing_rod") == Status::Failure)
     {
@@ -131,7 +124,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     std::set<int> old_fishing_hooks = client.findEntities(EntityType::FishingHook);
     std::set<int> fishing_hooks;
     // Start fishing
-    LOG_INFO("[Fish] Starting fishing");
     std::shared_ptr<NetworkManager> network_manager = client.GetNetworkManager();
     std::shared_ptr<ProtocolCraft::ServerboundUseItemPacket> use_item_msg = std::make_shared<ProtocolCraft::ServerboundUseItemPacket>();
 
@@ -178,8 +170,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     int fishing_hook_eid = *(fishing_hooks.begin());
 
     // Wait for bite (mdr)
-    LOG_INFO("[Fish] Started fishing, waiting for bite");
-
     while (1)
     {
         {
@@ -213,7 +203,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
 
 Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, const int crops_radius)
 {
-    LOG_INFO("[Farming] Starting farming task");
     Blackboard &b = client.GetBlackboard();
 
     // Get fishing workstation position
@@ -224,14 +213,12 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
         return Status::Failure;
     }
 
-    LOG_INFO("[Farming] Pathfinding to workstation");
     if (GoTo(client, workstation_pos, 2, 2) == Status::Failure)
     {
         LOG_WARNING("[Farming] Couldn't pathfind to fishing workstation");
         return Status::Failure;
     }
 
-    LOG_INFO("[Farming] Searching grown crops");
     vector<std::pair<string, Position>> grown_crops;
     vector<Position> _ = client.findBlocks([&grown_crops](const Block *block, const Position position, std::shared_ptr<World> _) -> bool
                                            {
@@ -263,7 +250,6 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
     for (auto crop : grown_crops)
     {
         // Collect
-        LOG_INFO("[Farming] Digging " << crop.first << " at " << crop.second);
         if (AdvancedTasks::DigAndCollect(client, crop.second) == Status::Failure)
         {
             LOG_WARNING("[Farming] Couldn't collect crop drops for " << crop.first);

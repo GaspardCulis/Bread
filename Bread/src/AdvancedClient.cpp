@@ -75,7 +75,7 @@ vector<Vector3<int>> AdvancedClient::findBlocks(std::function<bool(const Block *
 end:
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
-    LOG_INFO("Checking " << nb_checks << " blocks took " << duration.count() << " milliseconds.");
+    LOG_DEBUG("Checking " << nb_checks << " blocks took " << duration.count() << " milliseconds.");
     cout.flush();
 
     return out;

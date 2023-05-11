@@ -51,7 +51,7 @@ Botcraft::Status AdvancedTasks::DigAndCollect(AdvancedClient &client, const Posi
             if (entity->GetType() == EntityType::ItemEntity)
             {
                 std::shared_ptr<ItemEntity> item = std::static_pointer_cast<ItemEntity>(entity);
-                if (position.SqrDist(item->GetPosition()) <= 4)
+                if (position.SqrDist(item->GetPosition()) <= 16)
                 {
                     return true;
                 }
