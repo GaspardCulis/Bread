@@ -7,33 +7,27 @@ Botcraft::Status AdvancedTasks::CollectItem(AdvancedClient &client, int id)
 {
     std::shared_ptr<EntityManager> entity_manager = client.GetEntityManager();
 
-    Vector3<double> entity_position = client.getEntity(id)->GetPosition();
-
-    // Pathfind to the drop
-    if (GoTo(client, entity_position, 2) == Status::Failure)
-    {
-        LOG_WARNING("Error trying to pick up block drop (can't get close enough to " << entity_position << ")");
-        return Status::Failure;
-    }
-
-    // Wait for item pickup
+    // Wait for entity momentum to chill
     auto start = std::chrono::steady_clock::now();
-    while (true)
+    std::shared_ptr<Botcraft::Entity> e = client.getEntity(id);
+    while (e != nullptr)
     {
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() >= 4000)
+        // Timeout
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() >= 5000)
         {
-            LOG_WARNING("Error waiting for block drop pick-up (Timeout).");
+            LOG_WARNING("Error trying to pick up block drop (Timeout)");
             return Status::Failure;
         }
-
-        if (client.getEntity(id) == nullptr)
+        // Pathfind to the drop
+        Vector3<double> entity_position = e->GetPosition();
+        if (GoTo(client, entity_position, 1) == Status::Failure)
         {
-            break;
+            LOG_WARNING("Error trying to pick up block drop (can't get close enough to " << entity_position << ")");
+            return Status::Failure;
         }
-
         client.Yield();
+        e = client.getEntity(id);
     }
-
     return Status::Success;
 }
 
@@ -44,14 +38,14 @@ Botcraft::Status AdvancedTasks::DigAndCollect(AdvancedClient &client, const Posi
         LOG_WARNING("Error trying to break block at " << position);
         return Status::Failure;
     }
-
+    client.Yield();
     std::set<int> entities = client.findEntities(
         [&position](const std::shared_ptr<Entity> entity) -> bool
         {
             if (entity->GetType() == EntityType::ItemEntity)
             {
                 std::shared_ptr<ItemEntity> item = std::static_pointer_cast<ItemEntity>(entity);
-                if (position.SqrDist(item->GetPosition()) <= 16)
+                if (position.SqrDist(item->GetPosition()) <= 8)
                 {
                     return true;
                 }

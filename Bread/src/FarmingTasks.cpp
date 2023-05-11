@@ -254,13 +254,14 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
         {
             LOG_WARNING("[Farming] Couldn't collect crop drops for " << crop.first);
         }
-        // Wait for a bit
-        for (int i = 0; i < 20; ++i)
+        // Replant
+        int i = 0;
+        while (i < 5 && PlaceBlock(client, crop.first, crop.second) == Status::Failure)
         {
+            i++;
             client.Yield();
         }
-        // Replant
-        if (PlaceBlock(client, crop.first, crop.second) == Status::Failure)
+        if (i == 5)
         {
             LOG_WARNING("[Farming] Couldn't replant " << crop.first);
         }
@@ -279,6 +280,10 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTre
         .leaf(FarmingTasks::InitializeBlocks, 100)
         .end()
         .end()
+        .sequence()
         .leaf(CollectCropsAndReplant, 8)
+        .repeater(10)
+        .leaf(Fish)
+        .end()
         .end();
 }
