@@ -20,7 +20,9 @@ Botcraft::Status Fish(AdvancedClient& client);
 /// @param blocks_pos_blackboard Blackboard address of the workstation block position
 /// @param item_name Name of the item we want to collect
 /// @return Success if blocks are broken, items gathered and crops replanted, Failure otherwise
-Botcraft::Status CollectCropsAndReplant(Botcraft::BehaviourClient& client, const std::string& block_pos_blackboard, const int crops_radius = 8);
+Botcraft::Status CollectCropsAndReplant(Botcraft::BehaviourClient& client, const int crops_radius = 8);
+
+Botcraft::Status MineCobbleStone(Botcraft::BehaviourClient& client);
 
 std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree();
 }
