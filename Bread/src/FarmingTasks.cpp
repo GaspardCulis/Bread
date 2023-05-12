@@ -31,7 +31,7 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
     Botcraft::Blackboard &b = client.GetBlackboard();
 
     auto _ = client.findBlocks(
-        [&client, &b](const Block *block, const Position position, std::shared_ptr<World> world) -> bool
+        [&b](const Block *block, const Position position, std::shared_ptr<World> world) -> bool
         {
             Position down = position + Position(0, -1, 0);
 
