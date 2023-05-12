@@ -1,1 +1,1 @@
-#include "BedwarsTasks.hpp"
+#include "SurvivalTasks.hpp"
