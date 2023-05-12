@@ -19,6 +19,28 @@ Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const i
                 b.Set("SurvivalTasks.bed_pos", position);
                 LOG_INFO(block_name << "found at: " << position << "!");
             }
+
+            return false;
         },
         search_radius);
+
+    b.Set("SurvivalTasks.initialized", true);
+    LOG_INFO("Blocks initialized");
+
+    return Status::Success;
+}
+
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SurvivalTasks::CreateTree()
+{
+    // clang-format off
+    return Botcraft::Builder<AdvancedClient>()
+        .sequence()
+            .selector()
+                .leaf(CheckBlackboardBoolData, "SurvivalTasks.initialized")
+                .sequence()
+                    .leaf(SurvivalTasks::InitializeBlocks, 128)
+                .end()
+            .end()
+        .end();
+    // clang-format on
 }

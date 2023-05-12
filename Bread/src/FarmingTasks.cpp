@@ -274,7 +274,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTre
             .selector()
                 .leaf(CheckBlackboardBoolData, "FarmingTasks.initialized")
                 .sequence()
-                    .leaf(FarmingTasks::InitializeBlocks, 100)
+                    .leaf(FarmingTasks::InitializeBlocks, 128)
                 .end()
             .end()
             .sequence()
