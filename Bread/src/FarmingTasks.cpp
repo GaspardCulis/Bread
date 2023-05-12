@@ -272,18 +272,20 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
 
 std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTree()
 {
+    // clang-format off
     return Botcraft::Builder<AdvancedClient>()
         .sequence()
-        .selector()
-        .leaf(CheckBlackboardBoolData, "FarmingTasks.initialized")
-        .sequence()
-        .leaf(FarmingTasks::InitializeBlocks, 100)
-        .end()
-        .end()
-        .sequence()
-        .leaf(CollectCropsAndReplant, 8)
-        .repeater(10)
-        .leaf(Fish)
-        .end()
+            .selector()
+                .leaf(CheckBlackboardBoolData, "FarmingTasks.initialized")
+                .sequence()
+                    .leaf(FarmingTasks::InitializeBlocks, 100)
+                .end()
+            .end()
+            .sequence()
+                .leaf(CollectCropsAndReplant, 8)
+                .repeater(10)
+                .leaf(Fish)
+            .end()
         .end();
+    // clang-format on
 }
