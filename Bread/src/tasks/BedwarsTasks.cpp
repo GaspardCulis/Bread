@@ -1,4 +1,4 @@
-#include "BedwarsTasks.hpp"
+#include "tasks/BedwarsTasks.hpp"
 
 using namespace std;
 using namespace Botcraft;

@@ -1,5 +1,5 @@
-#include "FarmingTasks.hpp"
-#include "AdvancedTasks.hpp"
+#include "tasks/FarmingTasks.hpp"
+#include "tasks/AdvancedTasks.hpp"
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
 #include "botcraft/Game/Entities/entities/projectile/FishingHookEntity.hpp"
 #include "botcraft/Network/NetworkManager.hpp"

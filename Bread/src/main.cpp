@@ -4,8 +4,8 @@
 #include <botcraft/AI/Tasks/AllTasks.hpp>
 #include <unistd.h>
 #include <string>
-#include "FarmingTasks.hpp"
-#include "AdvancedTasks.hpp"
+#include "tasks/FarmingTasks.hpp"
+#include "tasks/AdvancedTasks.hpp"
 #include "AdvancedClient.hpp"
 
 using namespace std;

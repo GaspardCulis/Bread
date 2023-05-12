@@ -4,10 +4,10 @@ project(Bread)
 set(SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/main.cpp
     ${PROJECT_SOURCE_DIR}/src/AdvancedClient.cpp
-    ${PROJECT_SOURCE_DIR}/src/SurvivalTasks.cpp
-    ${PROJECT_SOURCE_DIR}/src/BedwarsTasks.cpp
-    ${PROJECT_SOURCE_DIR}/src/FarmingTasks.cpp
-    ${PROJECT_SOURCE_DIR}/src/AdvancedTasks.cpp
+    ${PROJECT_SOURCE_DIR}/src/tasks/SurvivalTasks.cpp
+    ${PROJECT_SOURCE_DIR}/src/tasks/BedwarsTasks.cpp
+    ${PROJECT_SOURCE_DIR}/src/tasks/FarmingTasks.cpp
+    ${PROJECT_SOURCE_DIR}/src/tasks/AdvancedTasks.cpp
 )
 
 # Declaring my headers (this is not strictly 
@@ -15,10 +15,10 @@ set(SRC_FILES
 # structure in visual on windows)
 set(HDR_FILES 
 
-    ${PROJECT_SOURCE_DIR}/include/AdvancedTasks.hpp
-    ${PROJECT_SOURCE_DIR}/include/BedwarsTasks.hpp
-    ${PROJECT_SOURCE_DIR}/include/FarmingTasks.hpp
-    ${PROJECT_SOURCE_DIR}/include/SurvivalTasks.hpp
+    ${PROJECT_SOURCE_DIR}/include/tasks/AdvancedTasks.hpp
+    ${PROJECT_SOURCE_DIR}/include/tasks/BedwarsTasks.hpp
+    ${PROJECT_SOURCE_DIR}/include/tasks/FarmingTasks.hpp
+    ${PROJECT_SOURCE_DIR}/include/tasks/SurvivalTasks.hpp
     ${PROJECT_SOURCE_DIR}/include/AdvancedClient.hpp
 )
 

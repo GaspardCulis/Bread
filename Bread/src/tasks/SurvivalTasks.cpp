@@ -1,4 +1,4 @@
-#include "SurvivalTasks.hpp"
+#include "tasks/SurvivalTasks.hpp"
 
 // https://minecraft.fandom.com/wiki/Food
 const std::vector<std::string> edible_items({"minecraft::rabbit_stew",
