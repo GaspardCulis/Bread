@@ -30,29 +30,25 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
 {
     Botcraft::Blackboard &b = client.GetBlackboard();
 
-    try
-    {
-        auto _ = client.findBlocks([&client, &b](const Block *block, const Position position, std::shared_ptr<World> world) -> bool
-                                   {
+    auto _ = client.findBlocks(
+        [&client, &b](const Block *block, const Position position, std::shared_ptr<World> world) -> bool
+        {
             Position down = position + Position(0, -1, 0);
 
-            if (block->GetBlockstate()->GetName() == "minecraft:barrel" && world->GetBlock(down)->GetBlockstate()->GetName() == "minecraft:gold_block") {
+            if (block->GetBlockstate()->GetName() == "minecraft:barrel" && world->GetBlock(down)->GetBlockstate()->GetName() == "minecraft:gold_block")
+            {
                 b.Set("FarmingTasks.fishing_workstation_pos", position);
                 LOG_INFO("Fishing workstation found at: " << position << "!");
-            } else if (block->GetBlockstate()->GetName() == "minecraft:composter") {
+            }
+            else if (block->GetBlockstate()->GetName() == "minecraft:composter")
+            {
                 b.Set("FarmingTasks.farming_workstation_pos", position);
                 LOG_INFO("Farming workstation found at: " << position << "!");
             }
 
-            return false; },
-                                   search_radius);
-    }
-    catch (std::range_error &e)
-    {
-        LOG_ERROR("Error while searching workstations: " << e.what());
-
-        return Status::Failure;
-    }
+            return false;
+        },
+        search_radius);
 
     b.Set("FarmingTasks.initialized", true);
     LOG_INFO("Blocks initialized");
