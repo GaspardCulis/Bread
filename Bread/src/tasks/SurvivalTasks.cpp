@@ -125,7 +125,6 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateEatTree()
             .inverter().leaf("check is hungry", Botcraft::IsHungry)
             // Go buy some food, then eat
             .sequence()
-                .leaf("check if has 3 emeralds in inventory", Botcraft::HasItemInInventory, "minecraft:emerald", 3)
                 .leaf(SurvivalTasks::FindBestFoodInInventory)
                 .leaf(Botcraft::CopyBlackboardData, "SurvivalTasks.best_food_in_inventory", "Eat.food_name")
                 .leaf(Botcraft::SetBlackboardData<bool>, "Eat.wait_confirmation", true)
