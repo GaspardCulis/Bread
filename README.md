@@ -1,5 +1,5 @@
 # Bread
- Are you socially akward ? Here is a Bedwars bot for you 
+ Are you socially akward ? Here is a Bedwars bot for you. *I mean not really that was the original plan but man it's complicated so I'm more focused on basic farming tasks at the moment*
  
  Status
  ------
