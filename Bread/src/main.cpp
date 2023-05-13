@@ -5,10 +5,12 @@
 #include <unistd.h>
 #include <string>
 #include "tasks/FarmingTasks.hpp"
-#include "tasks/AdvancedTasks.hpp"
+#include "tasks/SurvivalTasks.hpp"
 #include "AdvancedClient.hpp"
 
 using namespace std;
+
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree();
 
 int main(int argc, char *argv[])
 {
@@ -18,7 +20,7 @@ int main(int argc, char *argv[])
 
     sleep(5);
 
-    client.SetBehaviourTree(FarmingTasks::CreateTree());
+    client.SetBehaviourTree(CreateTree());
     client.StartBehaviour();
     client.RunBehaviourUntilClosed();
 
@@ -28,4 +30,15 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree()
+{
+    // clang-format off
+    return Botcraft::Builder<AdvancedClient>()
+        .sequence()
+            .tree(SurvivalTasks::CreateTree())
+            .tree(FarmingTasks::CreateTree())
+        .end();
+    // clang-format on
 }

@@ -279,7 +279,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTre
             .end()
             .sequence()
                 .leaf(CollectCropsAndReplant, 8)
-                .repeater(10)
+                .repeater(4)
                 .leaf(Fish)
             .end()
         .end();

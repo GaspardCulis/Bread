@@ -95,7 +95,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateSleepTree()
     return Botcraft::Builder<AdvancedClient>("sleep")
         .selector()
             // If it's night
-            .leaf("check if night", Botcraft::IsNightTime)
+            .inverter().leaf("check if night", Botcraft::IsNightTime)
             .sequence()
                 // Go to the bed
                 .leaf(Botcraft::CopyBlackboardData, "SurvivalTasks.bed_pos", "GoTo.goal") // See? Not the same
@@ -108,7 +108,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateSleepTree()
                     .leaf("interact with bed", Botcraft::InteractWithBlockBlackboard)
                     // Wait ~1s
                     .repeater(100).leaf(Botcraft::Yield)
-                    .inverter().leaf("check if night", Botcraft::IsNightTime)
+                    .leaf("check if night", Botcraft::IsNightTime)
                 .end()
             .end()
         .end();
