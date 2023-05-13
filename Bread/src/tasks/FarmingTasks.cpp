@@ -26,6 +26,28 @@ const vector<string> thanks_fishing_rod_messages({"Yo, much love and respect for
                                                   "I owe you big time for the fishing rod, homie. You're a true player.",
                                                   "Appreciate the fishing rod, boss. You always know how to keep a G happy."});
 
+const vector<string> need_hoe_messages({"Yo, hook me up with a farming hoe, cuz I ain't planting nothin' with my bare hands.",
+                                        "Listen up, homie, I need a farming hoe like a farmer needs his crops.",
+                                        "Hey, boss, can you toss me a farming hoe? I'm tryna till up some serious soil, you feel me?",
+                                        "Ayo, let me get a hoe, I'm tryna cultivate some fresh produce, ya dig?",
+                                        "Yo, I need a hoe like a rapper needs a beat, it's my tool for success on the farm.",
+                                        "I'm like a farmer without a hoe without a farming hoe, you gotta help me out.",
+                                        "Can't harvest without a farming hoe, it's my key to the earth.",
+                                        "Hey, can you lend me a farming hoe? I promise to return it in one piece, unless I hit a rock.",
+                                        "Gimme a farming hoe and watch me work the fields like a pro.",
+                                        "I need a farming hoe like a chef needs a knife, it's essential to my work on the farm."});
+
+const vector<string> thanks_hoe_messages({"Yo, much love and respect for the farming hoe, my man. You're a true G of agriculture.",
+                                          "Thanks for the hook up with the farming hoe, my dude. You're a real friend to farmers everywhere.",
+                                          "Hey, big thanks for the farming hoe, my guy. You're a lifesaver in the field.",
+                                          "I appreciate you getting me the farming hoe, homie. You're the real MVP of farming tools.",
+                                          "Thank you for the farming hoe, boss. You always come through in clutch when it comes to farming gear.",
+                                          "Can't thank you enough for the farming hoe, bro. You're a legend in the world of farming equipment.",
+                                          "You're the man for giving me the farming hoe, my friend. Let's grow some amazing crops together.",
+                                          "Thanks for the farming hoe, my guy. You're a true gangsta of agriculture.",
+                                          "I owe you big time for the farming hoe, homie. You're a true player in the world of farming tools.",
+                                          "Appreciate the farming hoe, boss. You always know how to keep a farmer happy and productive."});
+
 Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const int search_radius)
 {
     Botcraft::Blackboard &b = client.GetBlackboard();
@@ -211,7 +233,7 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
 
     if (GoTo(client, workstation_pos, 2, 2) == Status::Failure)
     {
-        LOG_WARNING("[Farming] Couldn't pathfind to fishing workstation");
+        LOG_WARNING("[Farming] Couldn't pathfind to farming workstation");
         return Status::Failure;
     }
 
@@ -266,6 +288,103 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
     return Status::Success;
 }
 
+Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
+{
+    Blackboard &b = client.GetBlackboard();
+
+    // Get fishing workstation position
+    const Position &workstation_pos = b.Get<Position>("FarmingTasks.farming_workstation_pos", Position(0));
+    if (workstation_pos == Position(0))
+    {
+        LOG_WARNING("[MaintainField] Called farming task with an un-initialized blackboard workstation pos.");
+        return Status::Failure;
+    }
+
+    // Equip hoe (the farming tool)
+    std::string hoe_item_name;
+    int hoe_slot = client.getItemSlotInInventory(
+        [&hoe_item_name](short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item *item) -> bool
+        {
+            if (item->GetToolType() == ToolType::Hoe)
+            {
+                hoe_item_name = item->GetName();
+                return true;
+            }
+            return false;
+        });
+    if (hoe_slot < 0)
+    {
+        LOG_WARNING("[MaintainField] No hoe");
+        if (client.sendOTM(need_hoe_messages[rand() % need_hoe_messages.size()], "need_hoe"))
+        {
+            b.Set<bool>("FarmingTasks::MaintainField.asked_hoe", true);
+        }
+        return Status::Failure;
+    }
+    else if (b.Get<bool>("FarmingTasks::MaintainField.asked_hoe", false))
+    {
+        client.SendChatMessage(thanks_hoe_messages[rand() % thanks_hoe_messages.size()]);
+        client.resetOTM("need_hoe");
+        b.Erase("FarmingTasks::MaintainField.asked_hoe");
+    }
+    if (SetItemInHand(client, hoe_item_name) == Status::Failure)
+    {
+        LOG_WARNING("Failed to equip " << hoe_item_name);
+        return Status::Failure;
+    }
+    // Scan for blocks that need a little shaving
+    std::vector<Position> water_blocks = client.findBlocks("minecraft:water", 7, 10, workstation_pos);
+    std::set<Position> candidate_blocks;
+    for (auto water : water_blocks)
+    {
+        std::shared_ptr<World> world = client.GetWorld();
+        std::lock_guard<std::mutex> lock_world(world->GetMutex());
+
+        for (int y = water.y - 2; y <= water.y + 2; y++)
+        {
+            for (int x = water.x - 4; x <= water.x + 4; x++)
+            {
+                for (int z = water.z - 4; z <= water.z + 4; z++)
+                {
+                    const Position current = Position(x, y, z);
+                    const Block *block = world->GetBlock(current);
+                    if (block == nullptr)
+                    {
+                        continue;
+                    }
+                    const std::string block_name = block->GetBlockstate()->GetName();
+                    if (block_name == "minecraft:dirt" || block_name == "minecraft:grass_block")
+                    {
+                        const Block *upper_block = world->GetBlock(Position(x, y + 1, z));
+                        if (upper_block != nullptr && upper_block->GetBlockstate()->IsAir())
+                        {
+                            candidate_blocks.insert(current);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // Then give them a little shave
+    if (candidate_blocks.size() > 0)
+    {
+        LOG_INFO("" << candidate_blocks.size() << " blocks need a little shaving");
+    }
+    for (auto block : candidate_blocks)
+    {
+        if (InteractWithBlock(client, block, Direction::Up, true) == Status::Failure)
+        {
+            LOG_WARNING("Failed to shave block at " << block);
+        }
+        for (int i = 0; i < 10; ++i)
+        {
+            client.Yield();
+        }
+    }
+
+    return Status::Success;
+}
+
 std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTree()
 {
     // clang-format off
@@ -279,6 +398,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTre
             .end()
             .sequence()
                 .leaf(CollectCropsAndReplant, 8)
+                .leaf(MaintainField)
                 .repeater(4)
                 .leaf(Fish)
             .end()
