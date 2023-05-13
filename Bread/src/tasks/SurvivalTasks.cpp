@@ -71,7 +71,6 @@ Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const i
 
 Botcraft::Status SurvivalTasks::FindBestFoodInInventory(AdvancedClient &client)
 {
-    LOG_INFO("Searching best food");
     int i = 0;
     while (i < edible_items.size() && client.getItemSlotInInventory(edible_items[i]) < 0)
     {
@@ -96,7 +95,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateSleepTree()
     return Botcraft::Builder<AdvancedClient>("sleep")
         .selector()
             // If it's night
-            .inverter().leaf("check if night", Botcraft::IsNightTime)
+            .leaf("check if night", Botcraft::IsNightTime)
             .sequence()
                 // Go to the bed
                 .leaf(Botcraft::CopyBlackboardData, "SurvivalTasks.bed_pos", "GoTo.goal") // See? Not the same
@@ -104,7 +103,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateSleepTree()
                 .leaf("go to bed", Botcraft::GoToBlackboard)
                 // Right click the bed every second until it's day time
                 .repeater(0).sequence()
-                    .leaf(Botcraft::CopyBlackboardData, "DispenserFarmBot.bed_position", "InteractWithBlock.pos")
+                    .leaf(Botcraft::CopyBlackboardData, "SurvivalTasks.bed_pos", "InteractWithBlock.pos")
                     .leaf(Botcraft::SetBlackboardData<bool>, "InteractWithBlock.animation", true)
                     .leaf("interact with bed", Botcraft::InteractWithBlockBlackboard)
                     // Wait ~1s
@@ -125,6 +124,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateEatTree()
             // If hungry
             .inverter().leaf("check is hungry", Botcraft::IsHungry)
             // Go buy some food, then eat
+            .inverter()
             .sequence()
                 .leaf(SurvivalTasks::FindBestFoodInInventory)
                 .leaf(Botcraft::CopyBlackboardData, "SurvivalTasks.best_food_in_inventory", "Eat.food_name")
