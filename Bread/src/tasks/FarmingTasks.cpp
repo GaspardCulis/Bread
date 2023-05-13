@@ -48,6 +48,10 @@ const vector<string> thanks_hoe_messages({"Yo, much love and respect for the far
                                           "I owe you big time for the farming hoe, homie. You're a true player in the world of farming tools.",
                                           "Appreciate the farming hoe, boss. You always know how to keep a farmer happy and productive."});
 
+const map<string, string> crops({{"minecraft:carrots", "minecraft:carrot"},
+                                 {"minecraft:potatoes", "minecraft:potato"},
+                                 {"minecraft:wheat", "minecraft:wheat_seeds"}});
+
 Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const int search_radius)
 {
     Botcraft::Blackboard &b = client.GetBlackboard();
@@ -91,7 +95,7 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
         return Status::Failure;
     }
 
-    if (GoTo(client, workstation_pos, 2, 2) == Status::Failure)
+    if (GoTo(client, workstation_pos, 4, 4) == Status::Failure)
     {
         LOG_WARNING("[Fish] Couldn't pathfind to fishing workstation");
         return Status::Failure;
@@ -231,7 +235,7 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
         return Status::Failure;
     }
 
-    if (GoTo(client, workstation_pos, 2, 2) == Status::Failure)
+    if (GoTo(client, workstation_pos, 4, 4) == Status::Failure)
     {
         LOG_WARNING("[Farming] Couldn't pathfind to farming workstation");
         return Status::Failure;
@@ -242,24 +246,11 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
                                            {
                                                 std::string block_name = block->GetBlockstate()->GetName();
                                                 if (
-                                                    (
-                                                        block_name == "minecraft:carrots" || 
-                                                        block_name == "minecraft:potatoes" ||
-                                                        block_name == "minecraft:wheat"
-                                                    ) && block->GetBlockstate()->GetVariableValue("age") == "7") 
+                                                    crops.count(block_name) && block->GetBlockstate()->GetVariableValue("age") == "7") 
                                                 {
                                                     std::pair<string, Position> crop_pair;
+                                                    crop_pair.first = crops.at(block_name);
                                                     crop_pair.second = position;
-                                                    if (block_name == "minecraft:wheat") {
-                                                        crop_pair.first = "minecraft:wheat_seeds";
-                                                    } else if (block_name == "minecraft:carrots") {
-                                                        crop_pair.first = "minecraft:carrot";
-                                                    } else if (block_name == "minecraft:potatoes") {
-                                                        crop_pair.first = "minecraft:potato";
-                                                    } else {
-                                                        LOG_ERROR("Illegal block_name");
-                                                        exit(1);
-                                                    }
                                                     grown_crops.push_back(crop_pair);
                                                 }
                                                 return false; },
@@ -335,10 +326,10 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
     // Scan for blocks that need a little shaving
     std::vector<Position> water_blocks = client.findBlocks("minecraft:water", 7, 10, workstation_pos);
     std::set<Position> candidate_blocks;
+    std::set<Position> empty_farmland_blocks;
     for (auto water : water_blocks)
     {
         std::shared_ptr<World> world = client.GetWorld();
-        std::lock_guard<std::mutex> lock_world(world->GetMutex());
 
         for (int y = water.y - 2; y <= water.y + 2; y++)
         {
@@ -346,6 +337,7 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
             {
                 for (int z = water.z - 4; z <= water.z + 4; z++)
                 {
+                    std::lock_guard<std::mutex> lock_world(world->GetMutex());
                     const Position current = Position(x, y, z);
                     const Block *block = world->GetBlock(current);
                     if (block == nullptr)
@@ -359,6 +351,15 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
                         if (upper_block != nullptr && upper_block->GetBlockstate()->IsAir())
                         {
                             candidate_blocks.insert(current);
+                            empty_farmland_blocks.insert(current);
+                        }
+                    }
+                    else if (block_name == "minecraft:farmland")
+                    {
+                        const Block *upper_block = world->GetBlock(Position(x, y + 1, z));
+                        if (upper_block == nullptr || upper_block->GetBlockstate()->IsAir())
+                        {
+                            empty_farmland_blocks.insert(current);
                         }
                     }
                 }
@@ -368,7 +369,7 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
     // Then give them a little shave
     if (candidate_blocks.size() > 0)
     {
-        LOG_INFO("" << candidate_blocks.size() << " blocks need a little shaving");
+        LOG_INFO("[MaintainField] " << candidate_blocks.size() << " blocks need a little shaving");
     }
     for (auto block : candidate_blocks)
     {
@@ -377,6 +378,59 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
             LOG_WARNING("Failed to shave block at " << block);
         }
         for (int i = 0; i < 10; ++i)
+        {
+            client.Yield();
+        }
+    }
+    // Plant on top of empty farmaland blocks
+    // Choose waht to plant based on what the bot has the less
+    map<std::string, int> available_crops;
+    client.getItemSlotInInventory([&available_crops](short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item *item) -> bool
+                                  {
+            std::string item_name = item->GetName();
+            if (std::find_if(crops.begin(), crops.end(), [item_name](const auto& mo) {return mo.second == item_name; }) != crops.end())
+            {
+                if (available_crops.count(item_name)) {
+                    available_crops[item_name] += current_slot.GetItemCount();
+                } else {
+                    available_crops[item_name] = current_slot.GetItemCount();
+                }
+            }
+            return false; });
+    std::vector<std::pair<std::string, int>> available_crops_sorted;
+    for (auto &it : available_crops)
+    {
+        available_crops_sorted.push_back(it);
+    }
+    sort(available_crops_sorted.begin(), available_crops_sorted.end(), [](pair<std::string, int> &a, pair<std::string, int> &b) -> bool
+         { return a.second < b.second; });
+
+    for (auto block : empty_farmland_blocks)
+    {
+        if (available_crops_sorted.size() == 0)
+        {
+            LOG_WARNING("[MaintainField] Out of crops");
+            break;
+        }
+        if (SetItemInHand(client, available_crops_sorted[0].first, Hand::Right) == Status::Failure)
+        {
+            LOG_WARNING("Failed to equip item " << available_crops_sorted[0].first);
+        }
+        Position crop_pos = block + Position(0, 1, 0);
+        if (PlaceBlock(client, available_crops_sorted[0].first, crop_pos) == Status::Failure)
+        {
+            LOG_WARNING("[MaintainField] Failed to plant " << available_crops_sorted[0].first << " at " << crop_pos);
+        }
+        else
+        {
+            available_crops_sorted[0] = std::pair<std::string, int>(available_crops_sorted[0].first, available_crops_sorted[0].second - 1);
+        }
+        // Check if no more crops
+        if (available_crops_sorted[0].second == 0)
+        {
+            available_crops_sorted.erase(available_crops_sorted.begin());
+        }
+        for (int i = 0; i < 10; i++)
         {
             client.Yield();
         }
@@ -397,8 +451,8 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> FarmingTasks::CreateTre
                 .end()
             .end()
             .sequence()
-                .leaf(CollectCropsAndReplant, 8)
-                .leaf(MaintainField)
+                .leaf("Collect grown crops", CollectCropsAndReplant, 8)
+                .leaf("Maintain filed", MaintainField)
                 .repeater(4)
                 .leaf(Fish)
             .end()
