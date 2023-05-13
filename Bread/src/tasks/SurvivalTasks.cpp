@@ -1,43 +1,43 @@
 #include "tasks/SurvivalTasks.hpp"
 
 // https://minecraft.fandom.com/wiki/Food
-const std::vector<std::string> edible_items({"minecraft::rabbit_stew",
-                                             "minecraft::cooked_porkchop",
-                                             "minecraft::cooked_beef",
-                                             "minecraft::golden_carrot",
-                                             "minecraft::cooked_mutton",
-                                             "minecraft::cooked_salmon",
-                                             // "minecraft::echanted_golden_apple", // Not gonna eat that right?
-                                             "minecraft::beetroot_soup",
-                                             "minecraft::cooked_chicken",
-                                             "minecraft::mushroom_stew",
-                                             "minecraft::suspicious_stew",
-                                             "minecraft::pumpkin_pie",
-                                             "minecraft::baked_potato",
-                                             "minecraft::cooked_cod",
-                                             "minecraft::cooked_rabbit",
-                                             "minecraft::honey_bottle",
-                                             "minecraft::carrot",
-                                             "minecraft::apple",
-                                             "minecraft::chorus_fruit",
-                                             "minecraft::raw_beef",
-                                             "minecraft::raw_porkchop",
-                                             "minecraft::raw_rabbit",
-                                             "minecraft::rotten_flesh",
-                                             "minecraft::melon_slice",
-                                             "minecraft::poisonous_potato",
-                                             "minecraft::raw_chicken",
-                                             "minecraft::raw_mutton",
-                                             "minecraft::cookie",
-                                             "minecraft::glow_berries",
-                                             "minecraft::raw_cod",
-                                             "minecraft::raw_salmon",
-                                             "minecraft::sweet_berries",
-                                             "minecraft::beetroot",
-                                             "minecraft::dried_kelp",
-                                             "minecraft::potato",
-                                             "minecraft::pufferfish",
-                                             "minecraft::tropical_fish"});
+const std::vector<std::string> edible_items({"minecraft:rabbit_stew",
+                                             "minecraft:cooked_porkchop",
+                                             "minecraft:cooked_beef",
+                                             "minecraft:golden_carrot",
+                                             "minecraft:cooked_mutton",
+                                             "minecraft:cooked_salmon",
+                                             // "minecraft:echanted_golden_apple", // Not gonna eat that right?
+                                             "minecraft:beetroot_soup",
+                                             "minecraft:cooked_chicken",
+                                             "minecraft:mushroom_stew",
+                                             "minecraft:suspicious_stew",
+                                             "minecraft:pumpkin_pie",
+                                             "minecraft:baked_potato",
+                                             "minecraft:cooked_cod",
+                                             "minecraft:cooked_rabbit",
+                                             "minecraft:honey_bottle",
+                                             "minecraft:carrot",
+                                             "minecraft:apple",
+                                             "minecraft:chorus_fruit",
+                                             "minecraft:raw_beef",
+                                             "minecraft:raw_porkchop",
+                                             "minecraft:raw_rabbit",
+                                             "minecraft:rotten_flesh",
+                                             "minecraft:melon_slice",
+                                             "minecraft:poisonous_potato",
+                                             "minecraft:raw_chicken",
+                                             "minecraft:raw_mutton",
+                                             "minecraft:cookie",
+                                             "minecraft:glow_berries",
+                                             "minecraft:raw_cod",
+                                             "minecraft:raw_salmon",
+                                             "minecraft:sweet_berries",
+                                             "minecraft:beetroot",
+                                             "minecraft:dried_kelp",
+                                             "minecraft:potato",
+                                             "minecraft:pufferfish",
+                                             "minecraft:tropical_fish"});
 
 Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const int search_radius)
 {
@@ -71,6 +71,7 @@ Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const i
 
 Botcraft::Status SurvivalTasks::FindBestFoodInInventory(AdvancedClient &client)
 {
+    LOG_INFO("Searching best food");
     int i = 0;
     while (i < edible_items.size() && client.getItemSlotInInventory(edible_items[i]) < 0)
     {
