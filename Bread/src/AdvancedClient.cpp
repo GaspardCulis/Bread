@@ -153,9 +153,7 @@ short AdvancedClient::getItemSlotInInventory(std::function<bool(short slodId, Pr
     const std::map<short, ProtocolCraft::Slot> &slots = inventory_manager->GetPlayerInventory()->GetSlots();
     for (auto it = slots.begin(); it != slots.end(); ++it)
     {
-        if (it->first >= Window::INVENTORY_STORAGE_START &&
-            it->first < Window::INVENTORY_OFFHAND_INDEX &&
-            !it->second.IsEmptySlot())
+        if (!it->second.IsEmptySlot())
         {
 #if PROTOCOL_VERSION < 347
             auto item = AssetsManager::getInstance().Items().at(it->second.GetBlockID()).at(static_cast<unsigned char>(it->second.GetItemDamage())).get();
