@@ -72,7 +72,7 @@ Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const i
 Botcraft::Status SurvivalTasks::FindBestFoodInInventory(AdvancedClient &client)
 {
     int i = 0;
-    while (i < edible_items.size() && client.getItemSlotInInventory(edible_items[i]) < 0)
+    while (i < edible_items.size() && HasItemInInventory(client, edible_items[i]) == Status::Failure)
     {
         i++;
     }
