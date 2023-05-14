@@ -4,6 +4,7 @@ project(Bread)
 set(SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/main.cpp
     ${PROJECT_SOURCE_DIR}/src/AdvancedClient.cpp
+    ${PROJECT_SOURCE_DIR}/src/tasks/StonksTasks.cpp
     ${PROJECT_SOURCE_DIR}/src/tasks/SurvivalTasks.cpp
     ${PROJECT_SOURCE_DIR}/src/tasks/BedwarsTasks.cpp
     ${PROJECT_SOURCE_DIR}/src/tasks/FarmingTasks.cpp
@@ -19,6 +20,7 @@ set(HDR_FILES
     ${PROJECT_SOURCE_DIR}/include/tasks/BedwarsTasks.hpp
     ${PROJECT_SOURCE_DIR}/include/tasks/FarmingTasks.hpp
     ${PROJECT_SOURCE_DIR}/include/tasks/SurvivalTasks.hpp
+    ${PROJECT_SOURCE_DIR}/include/tasks/StonksTasks.hpp
     ${PROJECT_SOURCE_DIR}/include/AdvancedClient.hpp
 )
 
