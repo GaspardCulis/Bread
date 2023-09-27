@@ -4,8 +4,7 @@
 #include <botcraft/AI/Tasks/AllTasks.hpp>
 #include <unistd.h>
 #include <string>
-#include "tasks/FarmingTasks.hpp"
-#include "tasks/SurvivalTasks.hpp"
+#include "tasks/SkyblockTasks.hpp"
 #include "AdvancedClient.hpp"
 
 using namespace std;
@@ -37,8 +36,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree()
     // clang-format off
     return Botcraft::Builder<AdvancedClient>()
         .sequence()
-            .tree(SurvivalTasks::CreateTree())
-            .tree(FarmingTasks::CreateTree())
+            .tree(SkyblockTasks::CreateTree())
         .end();
     // clang-format on
 }

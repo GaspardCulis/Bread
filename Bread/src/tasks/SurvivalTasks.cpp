@@ -122,7 +122,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateEatTree()
     return Botcraft::Builder<AdvancedClient>("eat")
         .selector()
             // If hungry
-            .inverter().leaf("check is hungry", Botcraft::IsHungry)
+            .inverter().leaf("check is hungry", Botcraft::IsHungry, 20)
             // Go buy some food, then eat
             .inverter()
             .sequence()
