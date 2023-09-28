@@ -14,7 +14,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree();
 int main(int argc, char *argv[])
 {
     AdvancedClient client;
-    client.Connect("localhost", "Maurice");
+    client.Connect("127.0.0.1:25565", "Maurice");
     client.SetAutoRespawn(true);
 
     sleep(5);

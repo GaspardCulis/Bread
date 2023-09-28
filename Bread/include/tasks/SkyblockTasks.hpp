@@ -14,6 +14,8 @@ namespace SkyblockTasks
 
     Botcraft::Status MineCobblestone(AdvancedClient &client);
 
+    Botcraft::Status StoreItems(AdvancedClient &client);
+
     std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree();
 
 }
