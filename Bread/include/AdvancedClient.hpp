@@ -103,6 +103,20 @@ public:
     short getItemSlotInInventory(const std::string item_name);
 
     /**
+     * @brief Gets the total number of items in the inventory for which the match_function callback retured true.
+     * @param match_function This function given the current slot returns true if this is the counted item.
+     * @return The total number of items matching match_function
+    */
+    int getItemCountInInventory(std::function<bool(short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item *item)> match_function);
+
+    /**
+     * @brief Gets the total number of items in the inventory matching the block name
+     * @param item_name The counted item name
+     * @return The item count
+    */
+    int getItemCountInInventory(const std::string item_name);
+
+     /**
      * @brief Sends a chat message only one time no matter how many times this method gets called
      * @param message The message to say
      * @param message_identifier The string literal that previous existence will be checked, defaults to message to say

@@ -1,7 +1,9 @@
 #include "AdvancedClient.hpp"
 #include "botcraft/Game/Inventory/InventoryManager.hpp"
+#include "botcraft/Game/Inventory/Item.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
 #include "botcraft/Game/AssetsManager.hpp"
+#include <string>
 
 using namespace std::chrono;
 using namespace Botcraft;
@@ -174,6 +176,42 @@ short AdvancedClient::getItemSlotInInventory(const std::string item_name)
 {
     return getItemSlotInInventory(
         [item_name](short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item *item) -> bool
+        {
+            return item->GetName() == item_name;
+        });
+}
+
+int AdvancedClient::getItemCountInInventory(std::function<bool(short slodId, ProtocolCraft::Slot current_slot, Botcraft::Item *item)> match_function)
+{
+    int total = 0;
+    
+    std::shared_ptr<InventoryManager> inventory_manager = this->GetInventoryManager();
+    std::lock_guard<std::mutex> inventory_lock(inventory_manager->GetMutex());
+
+    const std::map<short, ProtocolCraft::Slot> &slots = inventory_manager->GetPlayerInventory()->GetSlots();
+    for (auto it = slots.begin(); it != slots.end(); ++it)
+    {
+        if (!it->second.IsEmptySlot())
+        {
+#if PROTOCOL_VERSION < 347
+            auto item = AssetsManager::getInstance().Items().at(it->second.GetBlockID()).at(static_cast<unsigned char>(it->second.GetItemDamage())).get();
+#else
+            auto item = AssetsManager::getInstance().Items().at(it->second.GetItemID()).get();
+#endif
+            if (match_function(it->first, it->second, item))
+            {
+                total++;
+            }
+        }
+    }
+
+    return total;
+}
+
+int AdvancedClient::getItemCountInInventory(const std::string item_name)
+{
+    return getItemCountInInventory(
+        [item_name](short slitId, ProtocolCraft::Slot current_slot, Botcraft::Item *item) -> bool
         {
             return item->GetName() == item_name;
         });
