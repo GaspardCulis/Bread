@@ -200,7 +200,7 @@ int AdvancedClient::getItemCountInInventory(std::function<bool(short slodId, Pro
 #endif
             if (match_function(it->first, it->second, item))
             {
-                total++;
+                total += it->second.GetItemCount();
             }
         }
     }
