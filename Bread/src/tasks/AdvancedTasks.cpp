@@ -2,12 +2,14 @@
 #include "AdvancedClient.hpp"
 #include "botcraft/AI/Status.hpp"
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
+#include "botcraft/AI/Tasks/PathfindingTask.hpp"
 #include "botcraft/Game/Entities/entities/Entity.hpp"
 #include "botcraft/Game/Entities/entities/item/ItemEntity.hpp"
 #include "botcraft/Game/AssetsManager.hpp"
 #include "botcraft/Game/Entities/EntityManager.hpp"
 #include "botcraft/Game/Inventory/InventoryManager.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
+#include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Utilities/Logger.hpp"
 #include <cmath>
 #include <memory>
@@ -15,11 +17,21 @@
 
 Botcraft::Status AdvancedTasks::CollectItem(AdvancedClient &client, int id)
 {
-    // Wait for entity momentum to chill
-    auto start = std::chrono::steady_clock::now();
     std::shared_ptr<Botcraft::Entity> e = client.getEntity(id);
+    // Go to the target once
+    if (e != nullptr) 
+    {
+        const Vector3<double> entity_position = e->GetPosition();
+        GoTo(client, entity_position);
+        e = client.getEntity(id);
+    }
+    // Retry while not picked up for 5s
+    auto start = std::chrono::steady_clock::now();
     while (e != nullptr)
     {
+        const Vector3<double> entity_position = e->GetPosition();
+        GoTo(client, entity_position);
+        client.Yield();
         // Timeout
         if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() >= 5000)
         {
@@ -27,13 +39,6 @@ Botcraft::Status AdvancedTasks::CollectItem(AdvancedClient &client, int id)
             return Status::Failure;
         }
         // Pathfind to the drop
-        Vector3<double> entity_position = e->GetPosition();
-        if (GoTo(client, entity_position, 1) == Status::Failure)
-        {
-            LOG_WARNING("Error trying to pick up block drop (can't get close enough to " << entity_position << ")");
-            return Status::Failure;
-        }
-        client.Yield();
         e = client.getEntity(id);
     }
     return Status::Success;
@@ -47,10 +52,17 @@ Botcraft::Status AdvancedTasks::CollectItems(AdvancedClient &client, std::functi
         std::lock_guard<std::mutex> lock_entity_manager(entity_manager->GetMutex());
         entities = entity_manager->GetEntities();
     }
+
+    std::vector<int> to_be_collected;
+    // Finds the items that need to bee collected
     for (auto e : entities) {
-        if ((collect_radius == 0 || sqrt(e.second->GetPosition().SqrDist(client.getPosition())) <= collect_radius) &&  match_function(e.first, e.second)) {
-            CollectItem(client, e.first);
+        if ((collect_radius == 0 || sqrt(e.second->GetPosition().SqrDist(client.getPosition())) <= collect_radius) && match_function(e.first, e.second)) {
+            to_be_collected.push_back(e.first);
         }
+    }
+    // Collects them
+    for (int item_id : to_be_collected) {
+        CollectItem(client, item_id);
     }
 
     return Status::Success;
