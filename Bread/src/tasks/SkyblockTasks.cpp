@@ -231,7 +231,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
             .end()
             .sequence()
                 .leaf(ChopTrees)
-                .repeater(16)
+                .repeater(32)
                 .leaf(MineCobblestone)
                 .selector()
                     .inverter().leaf("check is hungry", Botcraft::IsHungry, 20)
