@@ -1,5 +1,7 @@
 #pragma once
 
+#include "protocolCraft/Messages/Play/Clientbound/ClientboundUpdateRecipesPacket.hpp"
+#include "protocolCraft/Types/Recipes/Recipe.hpp"
 #include <vector>
 
 #include <botcraft/Game/Entities/EntityManager.hpp>
@@ -134,4 +136,10 @@ public:
     void sortPositionsFromClosest(vector<Vector3<int>> &positions, const Vector3<double> origin) const;
 
     virtual ~AdvancedClient();
+
+ protected:
+    virtual void Handle(ProtocolCraft::ClientboundUpdateRecipesPacket &msg) override;
+
+ protected:
+    std::vector<ProtocolCraft::Recipe> available_recipes;
 };

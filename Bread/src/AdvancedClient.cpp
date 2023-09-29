@@ -3,6 +3,9 @@
 #include "botcraft/Game/Inventory/Item.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
 #include "botcraft/Game/AssetsManager.hpp"
+#include "botcraft/Utilities/Logger.hpp"
+#include "protocolCraft/Messages/Play/Clientbound/ClientboundUpdateRecipesPacket.hpp"
+#include "protocolCraft/Types/Recipes/Recipe.hpp"
 #include <string>
 
 using namespace std::chrono;
@@ -247,6 +250,13 @@ void AdvancedClient::sortPositionsFromClosest(vector<Vector3<int>> &positions, c
 {
     std::sort(positions.begin(), positions.end(), [origin](const Vector3<int> &a, const Vector3<int> &b) -> bool
               { return a.SqrDist(origin) < b.SqrDist(origin); });
+}
+
+void AdvancedClient::Handle(ProtocolCraft::ClientboundUpdateRecipesPacket &msg)
+{
+    const std::vector<ProtocolCraft::Recipe> recipes = msg.GetRecipes();
+    LOG_INFO("Received " << recipes.size() << " recipes");
+    this->available_recipes = recipes;
 }
 
 AdvancedClient::AdvancedClient(const bool use_renderer_) : TemplatedBehaviourClient<AdvancedClient>(use_renderer_)
