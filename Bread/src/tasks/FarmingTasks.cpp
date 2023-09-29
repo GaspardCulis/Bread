@@ -77,7 +77,7 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
         search_radius);
 
     b.Set("FarmingTasks.initialized", true);
-    LOG_INFO("Blocks initialized");
+    LOG_INFO("[FarmingTasks] Blocks initialized");
 
     return Status::Success;
 }
@@ -117,7 +117,7 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
 
     if (LookAt(client, average_water_position) == Status::Failure)
     {
-        LOG_WARNING("Failed to look at water");
+        LOG_WARNING("[Fish] Failed to look at water");
         return Status::Failure;
     }
 

@@ -1,13 +1,15 @@
 #include "tasks/SkyblockTasks.hpp"
+#include "botcraft/AI/Status.hpp"
 #include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Utilities/Logger.hpp"
 #include "tasks/AdvancedTasks.hpp"
+#include "tasks/FarmingTasks.hpp"
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
 #include "botcraft/Game/Inventory/InventoryManager.hpp"
 #include "botcraft/Game/AssetsManager.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
 
-Botcraft::Status SkyblockTasks::InitializeBlocks(AdvancedClient &client, const int radius)
+Status SkyblockTasks::InitializeBlocks(AdvancedClient &client, const int radius)
 {
     Botcraft::Blackboard &b = client.GetBlackboard();
 
@@ -69,19 +71,20 @@ Botcraft::Status SkyblockTasks::InitializeBlocks(AdvancedClient &client, const i
 
     b.Set("SkyblockTasks.initialized", true);
 
-    LOG_INFO("Found " << blocks.size() << " blocks");
+    LOG_INFO("[SkyblockTasks] Blocks initialized");
 
-    return Botcraft::Status::Success;
+    return Status::Success;
 }
 
-Botcraft::Status SkyblockTasks::ChopTrees(AdvancedClient &client)
+Status SkyblockTasks::ChopTrees(AdvancedClient &client)
 {
+    LOG_INFO("[ChopTrees] Started task");
     Botcraft::Blackboard &b = client.GetBlackboard();
 
     std::vector<Botcraft::Position> blocks = b.Get<std::vector<Botcraft::Position>>("SkyblockTasks.tree_blocks");
     if (blocks.size() == 0)
     {
-        return Botcraft::Status::Failure;
+        return Status::Failure;
     }
 
     for (Botcraft::Position block : blocks)
@@ -115,35 +118,34 @@ Botcraft::Status SkyblockTasks::ChopTrees(AdvancedClient &client)
             }
         }
         // Ignore leaves for now
-        LOG_INFO("Chopping tree at " << block);
         for (int i = 0; i < trunk.size(); i++)
         {
             if (i == 2)
             {
                 // Replant
-                if (PlaceBlock(client, "minecraft:oak_sapling", block) == Botcraft::Status::Failure)
+                if (PlaceBlock(client, "minecraft:oak_sapling", block) == Status::Failure)
                 {
-                    LOG_WARNING("Failed to place block");
-                    return Botcraft::Status::Failure;
+                    LOG_WARNING("[ChopTrees] Failed to place block");
+                    return Status::Failure;
                 }
                 // Go to the tree stem
-                while (GoTo(client, block) == Botcraft::Status::Failure)
+                while (GoTo(client, block) == Status::Failure)
                 {
                     // Must be leaves
                     Botcraft::Position leave = client.findNearestBlock("minecraft:oak_leaves", 5, block);
-                    if (Dig(client, leave) == Botcraft::Status::Failure)
+                    if (Dig(client, leave) == Status::Failure)
                     {
-                        LOG_WARNING("Failed to dig leave at " << leave);
-                        return Botcraft::Status::Failure;
+                        LOG_WARNING("[ChopTrees] Failed to dig leave at " << leave);
+                        return Status::Failure;
                     }
                 }
             }
             Botcraft::Position trunk_block = trunk[i];
             SetItemInHand(client, "minecraft:stone_axe");
-            if (Dig(client, trunk_block) == Botcraft::Status::Failure)
+            if (Dig(client, trunk_block) == Status::Failure)
             {
-                LOG_WARNING("Failed to dig block at " << trunk_block);
-                return Botcraft::Status::Failure;
+                LOG_WARNING("[ChopTrees] Failed to dig block at " << trunk_block);
+                return Status::Failure;
             }
         }
 
@@ -151,23 +153,29 @@ Botcraft::Status SkyblockTasks::ChopTrees(AdvancedClient &client)
         {
             client.Yield();
         }
-        LOG_INFO("Done chopping tree at " << block);
     }
 
-    return Botcraft::Status::Success;
+    return Status::Success;
 }
 
-Botcraft::Status SkyblockTasks::MineCobblestone(AdvancedClient &client)
+Status SkyblockTasks::MineCobblestone(AdvancedClient &client)
 {
+    LOG_INFO("[MineCobblestone] Started task");
+    
     Botcraft::Blackboard &b = client.GetBlackboard();
 
-    Botcraft::Position stone_pos = b.Get<Botcraft::Position>("SkyblockTasks.stone_pos");
-    Botcraft::Position crafting_table_pos = b.Get<Botcraft::Position>("SkyblockTasks.crafting_table_pos");
-
-    if (GoTo(client, crafting_table_pos + Botcraft::Vector3<int>(0, 1, 0)) == Botcraft::Status::Failure)
+    Botcraft::Position stone_pos = b.Get<Botcraft::Position>("SkyblockTasks.stone_pos", Position(0));
+    Botcraft::Position crafting_table_pos = b.Get<Botcraft::Position>("SkyblockTasks.crafting_table_pos", Position(0));
+    if (stone_pos == Position(0) || crafting_table_pos == Position(0))
     {
-        LOG_WARNING("Failed to go to crafting table");
-        return Botcraft::Status::Failure;
+        LOG_WARNING("[MineCobblestone] Called task with un-initialized blackboard positions");
+        return Status::Failure;
+    }
+
+    if (GoTo(client, crafting_table_pos + Botcraft::Vector3<int>(0, 1, 0)) == Status::Failure)
+    {
+        LOG_WARNING("[MineCobblestone] Failed to go to crafting table");
+        return Status::Failure;
     }
 
     // Wait for cobble to spawn
@@ -186,17 +194,19 @@ Botcraft::Status SkyblockTasks::MineCobblestone(AdvancedClient &client)
     }
 
     SetItemInHand(client, "minecraft:stone_pickaxe");
-    if (Dig(client, stone_pos) == Botcraft::Status::Failure)
+    if (Dig(client, stone_pos) == Status::Failure)
     {
-        LOG_WARNING("Failed to dig stone");
-        return Botcraft::Status::Failure;
+        LOG_WARNING("[MineCobblestone] Failed to dig stone");
+        return Status::Failure;
     }
 
-    return Botcraft::Status::Success;
+    return Status::Success;
 }
 
-Botcraft::Status SkyblockTasks::StoreItems(AdvancedClient &client)
+Status SkyblockTasks::StoreItems(AdvancedClient &client)
 {
+    LOG_INFO("[StoreItems] Started task");
+    
     Blackboard &b = client.GetBlackboard();
     AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:cobblestone", 32, 64);
     AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:oak_log", 32, 64);
@@ -227,6 +237,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
                 .end()
                 .leaf(StoreItems)
             .end()
+            .tree(FarmingTasks::CreateTree())
         .end();
     // clang-format on
 }
