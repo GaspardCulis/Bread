@@ -22,7 +22,10 @@ Botcraft::Status AdvancedTasks::CollectItem(AdvancedClient &client, int id)
     if (e != nullptr) 
     {
         const Vector3<double> entity_position = e->GetPosition();
-        GoTo(client, entity_position);
+        if (GoTo(client, entity_position, 1) == Status::Failure)
+        {
+            return Status::Failure;
+        }
         e = client.getEntity(id);
     }
     // Retry while not picked up for 5s
@@ -30,7 +33,10 @@ Botcraft::Status AdvancedTasks::CollectItem(AdvancedClient &client, int id)
     while (e != nullptr)
     {
         const Vector3<double> entity_position = e->GetPosition();
-        GoTo(client, entity_position);
+        if (GoTo(client, entity_position, 1) == Status::Failure)
+        {
+            return Status::Failure;
+        }
         client.Yield();
         // Timeout
         if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() >= 5000)
