@@ -2,17 +2,19 @@
 #include "AdvancedClient.hpp"
 #include "botcraft/AI/Status.hpp"
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
+#include "botcraft/Game/Entities/entities/Entity.hpp"
 #include "botcraft/Game/Entities/entities/item/ItemEntity.hpp"
 #include "botcraft/Game/AssetsManager.hpp"
 #include "botcraft/Game/Entities/EntityManager.hpp"
 #include "botcraft/Game/Inventory/InventoryManager.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
 #include "botcraft/Utilities/Logger.hpp"
+#include <cmath>
+#include <memory>
+#include <unordered_map>
 
 Botcraft::Status AdvancedTasks::CollectItem(AdvancedClient &client, int id)
 {
-    std::shared_ptr<EntityManager> entity_manager = client.GetEntityManager();
-
     // Wait for entity momentum to chill
     auto start = std::chrono::steady_clock::now();
     std::shared_ptr<Botcraft::Entity> e = client.getEntity(id);
@@ -35,6 +37,40 @@ Botcraft::Status AdvancedTasks::CollectItem(AdvancedClient &client, int id)
         e = client.getEntity(id);
     }
     return Status::Success;
+}
+
+Botcraft::Status AdvancedTasks::CollectItems(AdvancedClient &client, std::function<bool(const int entity_id, std::shared_ptr<Botcraft::Entity> entity)> match_function, const unsigned int collect_radius)
+{
+    std::unordered_map<int, std::shared_ptr<Botcraft::Entity>> entities;
+    {
+        std::shared_ptr<EntityManager> entity_manager = client.GetEntityManager();
+        std::lock_guard<std::mutex> lock_entity_manager(entity_manager->GetMutex());
+        entities = entity_manager->GetEntities();
+    }
+    for (auto e : entities) {
+        if ((collect_radius == 0 || sqrt(e.second->GetPosition().SqrDist(client.getPosition())) <= collect_radius) &&  match_function(e.first, e.second)) {
+            CollectItem(client, e.first);
+        }
+    }
+
+    return Status::Success;
+}
+
+Botcraft::Status AdvancedTasks::CollectItems(AdvancedClient &client, const std::string &item_name, const unsigned int collect_radius)
+{
+    const auto item_id = AssetsManager::getInstance().GetItemID(item_name);
+    return CollectItems(client, [item_id](const int entity_id, std::shared_ptr<Botcraft::Entity> entity) -> bool
+    {
+        if (entity->GetType() == EntityType::ItemEntity) 
+        {
+            std::shared_ptr<ItemEntity> item = std::static_pointer_cast<ItemEntity>(entity);
+            if (item->GetDataItem().GetItemID() == item_id)
+            {
+                return true;
+            }
+        }   
+        return false;
+    }, collect_radius);
 }
 
 Botcraft::Status AdvancedTasks::DigAndCollect(AdvancedClient &client, const Position position)

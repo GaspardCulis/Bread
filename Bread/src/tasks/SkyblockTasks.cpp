@@ -155,6 +155,10 @@ Status SkyblockTasks::ChopTrees(AdvancedClient &client)
         }
     }
 
+    // Collect the sapling and apples
+    AdvancedTasks::CollectItems(client, "minecraft:oak_sapling");
+    AdvancedTasks::CollectItems(client, "minecraft:apple");
+
     return Status::Success;
 }
 
@@ -225,7 +229,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
                     .leaf(SkyblockTasks::InitializeBlocks, 64)
                 .end()
             .end()
-                .sequence()
+            .sequence()
                 .leaf(ChopTrees)
                 .repeater(16)
                 .leaf(MineCobblestone)

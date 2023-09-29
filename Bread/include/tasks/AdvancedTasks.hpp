@@ -11,6 +11,16 @@ namespace AdvancedTasks
     /// @returns Success if item has been collected, Failure otherwise (4s collect timeout)
     Botcraft::Status CollectItem(AdvancedClient &client, int id);
 
+    /// @brief Collects all of the items for which match_function returns true in a given radius around the client
+    /// @param match_function If this function returns true for a given item entity, it will be added to the collect list
+    /// @param collect_radius The radius around the player for which items will be collected (defaults to 0, unlimited range)
+    Botcraft::Status CollectItems(AdvancedClient & client, std::function<bool(const int entity_id, std::shared_ptr<Botcraft::Entity> entity)> match_function, const unsigned int collect_radius = 0);
+
+    /// @brief Collects all of the items matching item_name in a given radius around the client
+    /// @param item_name The collected item name
+    /// @param collect_radius The radius around the player for which items will be collected (defaults to 0, unlimited range)
+    Botcraft::Status CollectItems(AdvancedClient & client, const std::string &item_name, const unsigned int collect_radius = 0);
+
     /// @brief Digs a given block and tries to collect the drop. Pathfinds to the block and the item drop. Automatically finds new item drops
     /// @param client The client performing the action
     /// @param position The block position

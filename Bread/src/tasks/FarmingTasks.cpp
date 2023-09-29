@@ -463,6 +463,8 @@ Botcraft::Status FarmingTasks::CompostVegetables(AdvancedClient &client, const s
         client.Yield();
     }
 
+    AdvancedTasks::CollectItems(client, "minecraft:bone_meal");
+
     return Status::Success;
 }
 
