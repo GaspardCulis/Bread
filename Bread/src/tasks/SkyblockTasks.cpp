@@ -1,4 +1,5 @@
 #include "tasks/SkyblockTasks.hpp"
+#include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Utilities/Logger.hpp"
 #include "tasks/AdvancedTasks.hpp"
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
@@ -196,92 +197,9 @@ Botcraft::Status SkyblockTasks::MineCobblestone(AdvancedClient &client)
 
 Botcraft::Status SkyblockTasks::StoreItems(AdvancedClient &client)
 {
-    if (client.getItemCountInInventory("minecraft:cobblestone") < 128) {
-        return Botcraft::Status::Success;
-    }
-
     Blackboard &b = client.GetBlackboard();
-    std::shared_ptr<InventoryManager> inventory_manager = client.GetInventoryManager();
-
-    if (OpenContainer(client, b.Get<Position>("SkyblockTasks.chest_pos")) == Status::Failure)
-    {
-        LOG_WARNING("Can't open output chest to store items");
-        return Status::Failure;
-    }
-    for (int i = 0; i < 100; ++i)
-    {
-        client.Yield();
-    }
-
-    short container_id;
-    std::shared_ptr<Window> container;
-    {
-        std::lock_guard<std::mutex> lock_inventory_manager(inventory_manager->GetMutex());
-        container_id = inventory_manager->GetFirstOpenedWindowId();
-        container = inventory_manager->GetWindow(container_id);
-    }
-
-    short dst_slot = -1;
-    short src_slot = -1;
-    {
-        std::lock_guard<std::mutex> lock_inventory_manager(inventory_manager->GetMutex());
-        const auto cobblestone_id = AssetsManager::getInstance().GetItemID("minecraft:cobblestone");
-        for (const auto &s : container->GetSlots())
-        {
-            if (dst_slot == -1 && s.first < container->GetFirstPlayerInventorySlot() &&
-                (s.second.IsEmptySlot() || (
-#if PROTOCOL_VERSION < 340 /* < 1.12.2 */
-                                               s.second.GetBlockID() == cobblestone_id.first && s.second.GetItemDamage() == cobblestone_id.second
-#else
-                                               s.second.GetItemID() == cobblestone_id
-#endif
-                                               && s.second.GetItemCount() == 0 )))
-            {
-                dst_slot = s.first;
-            }
-            else if (src_slot == -1 && s.first >= container->GetFirstPlayerInventorySlot() && 
-                    s.second.GetItemCount() == AssetsManager::getInstance().Items().at(cobblestone_id)->GetStackSize() &&
-#if PROTOCOL_VERSION < 340 /* < 1.12.2 */
-                     s.second.GetBlockID() == cobblestone_id.first && s.second.GetItemDamage() == cobblestone_id.second
-#else
-                     s.second.GetItemID() == cobblestone_id
-#endif
-            )
-            {
-                src_slot = s.first;
-            }
-            else if (src_slot != -1 && dst_slot != -1)
-            {
-                break;
-            }
-        }
-    }
-
-    // No dispenser in inventory, nothing to do
-    if (src_slot == -1)
-    {
-        CloseContainer(client);
-        return Status::Success;
-    }
-
-    if (dst_slot == -1)
-    {
-        LOG_WARNING("Can't find a place for the items in the chest");
-        CloseContainer(client);
-        return Status::Failure;
-    }
-
-    if (SwapItemsInContainer(client, container_id, src_slot, dst_slot) == Status::Failure)
-    {
-        LOG_WARNING("Error trying to transfer items into chest");
-        return Status::Failure;
-    }
-
-    CloseContainer(client);
-
-    if (client.getItemCountInInventory("minecraft:cobblestone") >= 128) {
-        return StoreItems(client);
-    }
+    AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:cobblestone", 32, 64);
+    AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:oak_log", 32, 64);
 
     return Status::Success;
 }
