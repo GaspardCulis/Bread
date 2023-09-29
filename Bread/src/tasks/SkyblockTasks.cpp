@@ -238,6 +238,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
                 .leaf(StoreItems)
             .end()
             .tree(FarmingTasks::CreateTree())
+            .leaf(FarmingTasks::CompostVegetables, "minecraft:oak_sapling", 32)
         .end();
     // clang-format on
 }

@@ -1,4 +1,8 @@
 #include "tasks/FarmingTasks.hpp"
+#include "botcraft/AI/Status.hpp"
+#include "botcraft/AI/Tasks/BaseTasks.hpp"
+#include "botcraft/Game/Vector3.hpp"
+#include "botcraft/Utilities/Logger.hpp"
 #include "tasks/AdvancedTasks.hpp"
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
 #include "botcraft/Game/Entities/entities/projectile/FishingHookEntity.hpp"
@@ -434,6 +438,29 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
         {
             client.Yield();
         }
+    }
+
+    return Status::Success;
+}
+
+Botcraft::Status FarmingTasks::CompostVegetables(AdvancedClient &client, const std::string item_name, const int keep_count)
+{
+    Botcraft::Blackboard &b = client.GetBlackboard();
+
+    const Position &workstation_pos = b.Get<Position>("FarmingTasks.farming_workstation_pos", Position(0));
+    if (workstation_pos == Position(0))
+    {
+        LOG_WARNING("[CompostVegetables] Called Fish task with an un-initialized blackboard workstation pos.");
+        return Status::Failure;
+    }
+
+    while (client.getItemCountInInventory(item_name) > keep_count) {
+        SetItemInHand(client, item_name);
+        if (InteractWithBlock(client, workstation_pos) == Status::Failure) {
+            LOG_WARNING("[CompostVegetables] Failed to interact with block at " << workstation_pos);
+            return Status::Failure;
+        }
+        client.Yield();
     }
 
     return Status::Success;

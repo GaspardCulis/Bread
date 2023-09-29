@@ -25,7 +25,12 @@ namespace FarmingTasks
 
     Botcraft::Status MaintainField(AdvancedClient &client);
 
-    Botcraft::Status MineCobbleStone(AdvancedClient &client);
+    /// @brief Composts the vegetable matching item_name, keeping a minimum of keep_count
+    /// @param client The client performing the action
+    /// @param item_name The minecraft item name of the vegetable
+    /// @param keep_count The number of vegetables the bot should keep, not composting them
+    /// @return Success if the items could be composted
+    Botcraft::Status CompostVegetables(AdvancedClient &client, const std::string item_name, const int keep_count);
 
     Botcraft::Status SmeltFood(AdvancedClient &client);
 
