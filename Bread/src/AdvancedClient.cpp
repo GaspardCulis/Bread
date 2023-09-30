@@ -3,9 +3,11 @@
 #include "botcraft/Game/Inventory/Item.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
 #include "botcraft/Game/AssetsManager.hpp"
+#include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Utilities/Logger.hpp"
 #include "protocolCraft/Messages/Play/Clientbound/ClientboundUpdateRecipesPacket.hpp"
 #include "protocolCraft/Types/Recipes/Recipe.hpp"
+#include "tasks/CraftingTasks.hpp"
 #include <string>
 
 using namespace std::chrono;
@@ -218,6 +220,11 @@ int AdvancedClient::getItemCountInInventory(const std::string item_name)
         {
             return item->GetName() == item_name;
         });
+}
+
+std::vector<ProtocolCraft::Recipe>& AdvancedClient::getRecipes()
+{
+    return this->available_recipes;
 }
 
 bool AdvancedClient::sendOTM(const std::string message, const std::optional<std::string> message_identifier)
