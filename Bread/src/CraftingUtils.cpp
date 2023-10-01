@@ -23,6 +23,7 @@
 #include "protocolCraft/Types/Recipes/RecipeTypeDataSmoking.hpp"
 #include "protocolCraft/Types/Recipes/RecipeTypeDataStoneCutting.hpp"
 #include "protocolCraft/Types/Slot.hpp"
+#include <stdexcept>
 #include <utility>
 
 const ProtocolCraft::Slot CraftingUtils::GetResult(const ProtocolCraft::Recipe &recipe)
@@ -133,8 +134,11 @@ std::vector<ProtocolCraft::Recipe> CraftingUtils::GetAvailableRecipes(AdvancedCl
     return recipes;
 }
 
-bool CraftingUtils::CanCraft(ManagersClient &client, ProtocolCraft::Recipe &recipe)
+std::map<short, int> CraftingUtils::GetIngredientsFromInventory(ManagersClient &client, ProtocolCraft::Recipe &recipe)
 {
+    // map<ItemId, count>
+    std::map<short, int> out;
+    
     auto ingredients = GetIngredients(recipe);
 
     // Clone player inventory
@@ -152,35 +156,42 @@ bool CraftingUtils::CanCraft(ManagersClient &client, ProtocolCraft::Recipe &reci
             abstract_inv[it->second.GetItemID()] = (int) it->second.GetItemCount();
     }
 
-    // DEBUG
-    for (auto i : abstract_inv)
-    {
-        LOG_INFO("I Have " << i.second << " " << AssetsManager::getInstance().GetItem(i.first)->GetName() << " in my inventory");
-    }
-
     for (auto i : ingredients)
     {
         if (i.GeItems().size() == 0) continue;
-        LOG_INFO("Ingredient requires either:");
         short found_item_id = -1;
         char found_item_count = 0;
         for (auto p : i.GeItems())
         {
-            LOG_INFO("\t- " << (int) p.GetItemCount() << " " << AssetsManager::getInstance().GetItem(p.GetItemID())->GetName());
             if (abstract_inv.count(p.GetItemID()) !=0 && abstract_inv[p.GetItemID()] >= p.GetItemCount())
             {
                 found_item_id = p.GetItemID();
                 found_item_count = p.GetItemCount();
-                    LOG_INFO("\tI have that.");
-                }
+                break;
+            }
         }
         // If we didn't find an item
         if (found_item_id < 0)
         {
-            return false;
+            throw std::out_of_range("Counld't find an item in inventory satisfaying ingredients for recipe");
         } 
         abstract_inv[found_item_id] -= found_item_count;
+        if (out.count(found_item_id) == 0) out[found_item_id] = 0;
+        out[found_item_id] += found_item_count;
     }
 
-    return true;
+    return out;
+}
+
+bool CraftingUtils::CanCraft(ManagersClient &client, ProtocolCraft::Recipe &recipe)
+{
+    try
+    {
+        auto _ = GetIngredientsFromInventory(client, recipe);
+        return true;
+    }
+    catch (range_error)
+    {
+        return false;
+    }
 }
