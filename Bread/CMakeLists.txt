@@ -3,6 +3,7 @@ project(Bread)
 # Declaring my source files
 set(SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/main.cpp
+    ${PROJECT_SOURCE_DIR}/src/CraftingUtils.cpp
     ${PROJECT_SOURCE_DIR}/src/AdvancedClient.cpp
     ${PROJECT_SOURCE_DIR}/src/tasks/StonksTasks.cpp
     ${PROJECT_SOURCE_DIR}/src/tasks/SurvivalTasks.cpp

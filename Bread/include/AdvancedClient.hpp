@@ -118,6 +118,8 @@ public:
     */
     int getItemCountInInventory(const std::string item_name);
 
+    std::vector<ProtocolCraft::Recipe>& getRecipes();
+
      /**
      * @brief Sends a chat message only one time no matter how many times this method gets called
      * @param message The message to say

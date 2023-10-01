@@ -7,7 +7,6 @@
 #include "botcraft/Utilities/Logger.hpp"
 #include "protocolCraft/Messages/Play/Clientbound/ClientboundUpdateRecipesPacket.hpp"
 #include "protocolCraft/Types/Recipes/Recipe.hpp"
-#include "tasks/CraftingTasks.hpp"
 #include <string>
 
 using namespace std::chrono;

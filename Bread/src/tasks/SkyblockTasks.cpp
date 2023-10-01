@@ -1,4 +1,5 @@
 #include "tasks/SkyblockTasks.hpp"
+#include "CraftingUtils.hpp"
 #include "botcraft/AI/Status.hpp"
 #include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Utilities/Logger.hpp"
@@ -214,6 +215,22 @@ Status SkyblockTasks::StoreItems(AdvancedClient &client)
     Blackboard &b = client.GetBlackboard();
     AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:cobblestone", 32, 64);
     AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:oak_log", 32, 64);
+    AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:bone_meal", 0, 8);
+    AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:wheat", 0, 3);
+
+    LogInventoryContent(client);
+
+    auto recipes = CraftingUtils::GetAvailableRecipes(client, "minecraft:stone_pickaxe");
+    LOG_INFO("There are " << recipes.size() << " recipes for pick");
+    auto recipe = recipes[0];
+    if (CraftingUtils::CanCraft(client, recipe))
+    {
+        LOG_INFO("Hey, I can craft pickaxe !");
+    }
+    else
+    {
+        LOG_INFO("Bruh can't craft pixk");
+    }
 
     return Status::Success;
 }
@@ -231,7 +248,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
             .end()
             .sequence()
                 .leaf(ChopTrees)
-                .repeater(32)
+                .repeater(16)
                 .leaf(MineCobblestone)
                 .selector()
                     .inverter().leaf("check is hungry", Botcraft::IsHungry, 20)
@@ -243,6 +260,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
             .end()
             .tree(FarmingTasks::CreateTree())
             .leaf(FarmingTasks::CompostVegetables, "minecraft:oak_sapling", 32)
+            .leaf(FarmingTasks::CompostVegetables, "minecraft:wheat_seeds", 32)
         .end();
     // clang-format on
 }
