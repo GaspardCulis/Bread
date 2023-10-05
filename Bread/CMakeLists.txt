@@ -5,6 +5,7 @@ set(SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/main.cpp
     ${PROJECT_SOURCE_DIR}/src/CraftingUtils.cpp
     ${PROJECT_SOURCE_DIR}/src/AdvancedClient.cpp
+    ${PROJECT_SOURCE_DIR}/src/tasks/CraftingTasks.cpp
     ${PROJECT_SOURCE_DIR}/src/tasks/StonksTasks.cpp
     ${PROJECT_SOURCE_DIR}/src/tasks/SurvivalTasks.cpp
     ${PROJECT_SOURCE_DIR}/src/tasks/BedwarsTasks.cpp
