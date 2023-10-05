@@ -10,7 +10,7 @@ if [ $? -ne 0 ]; then
 echo "${RED}CMake build failed${RESET}"
 exit 1
 fi
-make all
+make -j8 all
 if [ $? -ne 0 ]; then
 echo "${RED}Build failed${RESET}"
 exit 1
