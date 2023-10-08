@@ -2,6 +2,7 @@
 #include "botcraft/AI/Status.hpp"
 #include "botcraft/AI/Tasks/BaseTasks.hpp"
 #include "botcraft/Game/Vector3.hpp"
+#include "botcraft/Game/World/Blockstate.hpp"
 #include "botcraft/Utilities/Logger.hpp"
 #include "tasks/AdvancedTasks.hpp"
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
@@ -61,16 +62,16 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
     Botcraft::Blackboard &b = client.GetBlackboard();
 
     auto _ = client.findBlocks(
-        [&b](const Block *block, const Position position, std::shared_ptr<World> world) -> bool
+        [&b](const Blockstate *block, const Position position, std::shared_ptr<World> world) -> bool
         {
             Position down = position + Position(0, -1, 0);
 
-            if (block->GetBlockstate()->GetName() == "minecraft:barrel" && world->GetBlock(down)->GetBlockstate()->GetName() == "minecraft:gold_block")
+            if (block->GetName() == "minecraft:barrel" && world->GetBlock(down)->GetName() == "minecraft:gold_block")
             {
                 b.Set("FarmingTasks.fishing_workstation_pos", position);
                 LOG_INFO("Fishing workstation found at: " << position << "!");
             }
-            else if (block->GetBlockstate()->GetName() == "minecraft:composter")
+            else if (block->GetName() == "minecraft:composter")
             {
                 b.Set("FarmingTasks.farming_workstation_pos", position);
                 LOG_INFO("Farming workstation found at: " << position << "!");
@@ -108,9 +109,9 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
     // Calculate average water position to throw hook at
     Vector3<double> average_water_position;
     int nb_water = 0;
-    vector<Position> _ = client.findBlocks([&average_water_position, &nb_water](const Block *block, const Position position, std::shared_ptr<World> _) -> bool
+    vector<Position> _ = client.findBlocks([&average_water_position, &nb_water](const Blockstate *block, const Position position, std::shared_ptr<World> _) -> bool
                                            {
-                                              if (block->GetBlockstate()->GetName() != "minecraft:water")
+                                              if (block->GetName() != "minecraft:water")
                                                   return false;
 
                                               average_water_position = (average_water_position * nb_water + position) / (++nb_water);
@@ -157,7 +158,6 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
 #if PROTOCOL_VERSION > 758
     {
         std::shared_ptr<World> world = client.GetWorld();
-        std::lock_guard<std::mutex> world_guard(world->GetMutex());
         use_item_msg->SetSequence(world->GetNextWorldInteractionSequenceId());
     }
 #endif
@@ -246,11 +246,11 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
     }
 
     vector<std::pair<string, Position>> grown_crops;
-    vector<Position> _ = client.findBlocks([&grown_crops](const Block *block, const Position position, std::shared_ptr<World> _) -> bool
+    vector<Position> _ = client.findBlocks([&grown_crops](const Blockstate *block, const Position position, std::shared_ptr<World> _) -> bool
                                            {
-                                                std::string block_name = block->GetBlockstate()->GetName();
+                                                std::string block_name = block->GetName();
                                                 if (
-                                                    crops.count(block_name) && block->GetBlockstate()->GetVariableValue("age") == "7") 
+                                                    crops.count(block_name) && block->GetVariableValue("age") == "7") 
                                                 {
                                                     std::pair<string, Position> crop_pair;
                                                     crop_pair.first = crops.at(block_name);
@@ -341,18 +341,17 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
             {
                 for (int z = water.z - 4; z <= water.z + 4; z++)
                 {
-                    std::lock_guard<std::mutex> lock_world(world->GetMutex());
                     const Position current = Position(x, y, z);
-                    const Block *block = world->GetBlock(current);
+                    const Blockstate *block = world->GetBlock(current);
                     if (block == nullptr)
                     {
                         continue;
                     }
-                    const std::string block_name = block->GetBlockstate()->GetName();
+                    const std::string block_name = block->GetName();
                     if (block_name == "minecraft:dirt" || block_name == "minecraft:grass_block")
                     {
-                        const Block *upper_block = world->GetBlock(Position(x, y + 1, z));
-                        if (upper_block != nullptr && upper_block->GetBlockstate()->IsAir())
+                        const Blockstate *upper_block = world->GetBlock(Position(x, y + 1, z));
+                        if (upper_block != nullptr && upper_block->IsAir())
                         {
                             candidate_blocks.insert(current);
                             empty_farmland_blocks.insert(current);
@@ -360,8 +359,8 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
                     }
                     else if (block_name == "minecraft:farmland")
                     {
-                        const Block *upper_block = world->GetBlock(Position(x, y + 1, z));
-                        if (upper_block == nullptr || upper_block->GetBlockstate()->IsAir())
+                        const Blockstate *upper_block = world->GetBlock(Position(x, y + 1, z));
+                        if (upper_block == nullptr || upper_block->IsAir())
                         {
                             empty_farmland_blocks.insert(current);
                         }

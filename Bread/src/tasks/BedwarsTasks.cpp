@@ -10,10 +10,10 @@ Status BedwarsTasks::InitializeBlocks(AdvancedClient &client, int search_radius)
 
     try
     {
-        Vector3<int> bed_position = client.findNearestBlock([](const Block *block, const Position _, std::shared_ptr<World> __) -> bool
+        Vector3<int> bed_position = client.findNearestBlock([](const Blockstate *block, const Position _, std::shared_ptr<World> __) -> bool
                                                             {
             const string suffix = "_bed";
-            const string& block_name = block->GetBlockstate()->GetName();
+            const string& block_name = block->GetName();
             return block_name.size() >= suffix.size() && 0 == block_name.compare(block_name.size()-suffix.size(), suffix.size(), suffix); },
                                                             search_radius);
 

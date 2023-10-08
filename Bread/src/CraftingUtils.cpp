@@ -158,10 +158,10 @@ std::map<short, int> CraftingUtils::GetIngredientsFromInventory(ManagersClient &
 
     for (auto i : ingredients)
     {
-        if (i.GeItems().size() == 0) continue;
+        if (i.GetItems().size() == 0) continue;
         short found_item_id = -1;
         char found_item_count = 0;
-        for (auto p : i.GeItems())
+        for (auto p : i.GetItems())
         {
             if (abstract_inv.count(p.GetItemID()) !=0 && abstract_inv[p.GetItemID()] >= p.GetItemCount())
             {

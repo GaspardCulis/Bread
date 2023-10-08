@@ -15,11 +15,11 @@ Status SkyblockTasks::InitializeBlocks(AdvancedClient &client, const int radius)
     Botcraft::Blackboard &b = client.GetBlackboard();
 
     std::vector<Botcraft::Position> oak_blocks = client.findBlocks(
-        [](const Botcraft::Block *block, const Botcraft::Position position, std::shared_ptr<Botcraft::World> world)
+        [](const Botcraft::Blockstate *block, const Botcraft::Position position, std::shared_ptr<Botcraft::World> world)
         {
-            if (block->GetBlockstate()->GetName() == "minecraft:oak_log")
+            if (block->GetName() == "minecraft:oak_log")
             {
-                if (world->GetBlock(position + Botcraft::Vector3<int>(0, -1, 0))->GetBlockstate()->GetName() == "minecraft:dirt")
+                if (world->GetBlock(position + Botcraft::Vector3<int>(0, -1, 0))->GetName() == "minecraft:dirt")
                 {
                     return true;
                 }
@@ -37,11 +37,11 @@ Status SkyblockTasks::InitializeBlocks(AdvancedClient &client, const int radius)
     b.Set("SkyblockTasks.tree_blocks", blocks);
 
     Botcraft::Position stone_pos = client.findNearestBlock(
-        [](const Botcraft::Block *block, const Botcraft::Position position, std::shared_ptr<Botcraft::World> world)
+        [](const Botcraft::Blockstate *block, const Botcraft::Position position, std::shared_ptr<Botcraft::World> world)
         {
-            if (block->GetBlockstate()->GetName() == "minecraft:cobblestone")
+            if (block->GetName() == "minecraft:cobblestone")
             {
-                if (world->GetBlock(position + Botcraft::Vector3<int>(0, -1, 0))->GetBlockstate()->GetName() == "minecraft:pumpkin")
+                if (world->GetBlock(position + Botcraft::Vector3<int>(0, -1, 0))->GetName() == "minecraft:pumpkin")
                 {
                     return true;
                 }
@@ -53,11 +53,11 @@ Status SkyblockTasks::InitializeBlocks(AdvancedClient &client, const int radius)
     Botcraft::Position crafting_table_pos = client.findNearestBlock("minecraft:crafting_table", 5, stone_pos);
 
     Botcraft::Position chest_pos = client.findNearestBlock(
-        [](const Botcraft::Block *block, const Botcraft::Position position, std::shared_ptr<Botcraft::World> world)
+        [](const Botcraft::Blockstate *block, const Botcraft::Position position, std::shared_ptr<Botcraft::World> world)
         {
-            if (block->GetBlockstate()->GetName() == "minecraft:chest")
+            if (block->GetName() == "minecraft:chest")
             {
-                if (world->GetBlock(position + Botcraft::Vector3<int>(0, -1, 0))->GetBlockstate()->GetName() == "minecraft:pumpkin")
+                if (world->GetBlock(position + Botcraft::Vector3<int>(0, -1, 0))->GetName() == "minecraft:pumpkin")
                 {
                     return true;
                 }
@@ -93,9 +93,8 @@ Status SkyblockTasks::ChopTrees(AdvancedClient &client)
         bool is_oak = false;
         {
             std::shared_ptr<World> world = client.GetWorld();
-            std::lock_guard<std::mutex> lock_world(world->GetMutex());
 
-            if (world->GetBlock(block)->GetBlockstate()->GetName() == "minecraft:oak_log")
+            if (world->GetBlock(block)->GetName() == "minecraft:oak_log")
             {
                 is_oak = true;
             }
@@ -109,10 +108,9 @@ Status SkyblockTasks::ChopTrees(AdvancedClient &client)
         std::vector<Botcraft::Position> trunk;
         {
             std::shared_ptr<World> world = client.GetWorld();
-            std::lock_guard<std::mutex> lock_world(world->GetMutex());
 
             Botcraft::Position current_block = block;
-            while (world->GetBlock(current_block)->GetBlockstate()->GetName() == "minecraft:oak_log")
+            while (world->GetBlock(current_block)->GetName() == "minecraft:oak_log")
             {
                 trunk.push_back(current_block);
                 current_block += Botcraft::Vector3<int>(0, 1, 0);
@@ -188,9 +186,8 @@ Status SkyblockTasks::MineCobblestone(AdvancedClient &client)
     {
         {
             std::shared_ptr<World> world = client.GetWorld();
-            std::lock_guard<std::mutex> lock_world(world->GetMutex());
 
-            if (world->GetBlock(stone_pos)->GetBlockstate()->GetName() == "minecraft:cobblestone")
+            if (world->GetBlock(stone_pos)->GetName() == "minecraft:cobblestone")
             {
                 break;
             }
