@@ -214,7 +214,7 @@ Status SkyblockTasks::StoreItems(AdvancedClient &client)
     AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:oak_log", 32, 64);
     AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:bone_meal", 0, 8);
     AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:wheat", 0, 3);
-
+/*
     LogInventoryContent(client);
 
     auto recipes = CraftingUtils::GetAvailableRecipes(client, "minecraft:stone_pickaxe");
@@ -228,6 +228,23 @@ Status SkyblockTasks::StoreItems(AdvancedClient &client)
     {
         LOG_INFO("Bruh can't craft pixk");
     }
+*/
+    return Status::Success;
+}
+
+Botcraft::Status SkyblockTasks::Farm(AdvancedClient &client)
+{
+    Botcraft::Blackboard &b = client.GetBlackboard();
+
+    for (Position workstation : client.findBlocks("minecraft:composter"))
+    {
+        b.Set<Position>("FarmingTasks.farming_workstation_pos", workstation);
+
+        FarmingTasks::CollectCropsAndReplant(client, 3);
+        FarmingTasks::MaintainField(client);
+    }
+    FarmingTasks::CompostVegetables(client, "minecraft:oak_sapling", 32);
+    FarmingTasks::CompostVegetables(client, "minecraft:wheat_seeds", 32);
 
     return Status::Success;
 }
@@ -255,9 +272,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
                 .end()
                 .leaf(StoreItems)
             .end()
-            .tree(FarmingTasks::CreateTree())
-            .leaf(FarmingTasks::CompostVegetables, "minecraft:oak_sapling", 32)
-            .leaf(FarmingTasks::CompostVegetables, "minecraft:wheat_seeds", 32)
+            .leaf(SkyblockTasks::Farm)
         .end();
     // clang-format on
 }

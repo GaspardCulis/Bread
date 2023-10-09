@@ -71,12 +71,6 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
                 b.Set("FarmingTasks.fishing_workstation_pos", position);
                 LOG_INFO("Fishing workstation found at: " << position << "!");
             }
-            else if (block->GetName() == "minecraft:composter")
-            {
-                b.Set("FarmingTasks.farming_workstation_pos", position);
-                LOG_INFO("Farming workstation found at: " << position << "!");
-            }
-
             return false;
         },
         search_radius);
@@ -258,7 +252,7 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
                                                     grown_crops.push_back(crop_pair);
                                                 }
                                                 return false; },
-                                           16);
+                                           crops_radius, -1, workstation_pos);
 
     for (auto crop : grown_crops)
     {
