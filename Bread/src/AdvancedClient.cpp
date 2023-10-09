@@ -91,7 +91,7 @@ vector<Vector3<int>> AdvancedClient::findBlocks(const string block_name, const i
 
 Vector3<int> AdvancedClient::findNearestBlock(std::function<bool(const Blockstate *block, const Position position, const std::shared_ptr<World> world)> match_function, const int search_radius, const std::optional<Position> origin) const
 {
-    vector<Vector3<int>> blocks = this->findBlocks(match_function, search_radius, 10, origin);
+    vector<Vector3<int>> blocks = this->findBlocks(match_function, search_radius, -1, origin);
     sortPositionsFromClosest(blocks, origin.value_or(getPosition()));
     if (blocks.size() > 0)
     {
