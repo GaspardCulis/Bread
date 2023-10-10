@@ -9,6 +9,7 @@
 #include "botcraft/Game/Inventory/InventoryManager.hpp"
 #include "botcraft/Game/AssetsManager.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
+#include "tasks/SurvivalTasks.hpp"
 
 Status SkyblockTasks::InitializeBlocks(AdvancedClient &client, const int radius)
 {
@@ -261,15 +262,10 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
                 .end()
             .end()
             .sequence()
+                .tree(SurvivalTasks::CreateTree())
                 .leaf(ChopTrees)
                 .repeater(16)
                 .leaf(MineCobblestone)
-                .selector()
-                    .inverter().leaf("check is hungry", Botcraft::IsHungry, 20)
-                    .sequence()
-                        .leaf("eat", Botcraft::Eat, "minecraft:apple", true)
-                    .end()
-                .end()
                 .leaf(StoreItems)
             .end()
             .leaf(SkyblockTasks::Farm)

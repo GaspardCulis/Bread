@@ -8,6 +8,7 @@
 #include "botcraft/AI/Tasks/InventoryTasks.hpp"
 #include "botcraft/Game/Entities/entities/projectile/FishingHookEntity.hpp"
 #include "botcraft/Network/NetworkManager.hpp"
+#include <cmath>
 
 const vector<string> need_fishing_rod_messages({"Yo, hook me up with a fishing rod, cuz I ain't catchin' nothin' with my bare hands.",
                                                 "Listen up, homie, I need a fishing rod like a fish needs water.",
@@ -233,18 +234,23 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
         return Status::Failure;
     }
 
+    /*
     if (GoTo(client, workstation_pos, 4, 4) == Status::Failure)
     {
         LOG_WARNING("[Farming] Couldn't pathfind to farming workstation");
         return Status::Failure;
     }
+    */
 
     vector<std::pair<string, Position>> grown_crops;
-    vector<Position> _ = client.findBlocks([&grown_crops](const Blockstate *block, const Position position, std::shared_ptr<World> _) -> bool
+    vector<Position> _ = client.findBlocks([&grown_crops, workstation_pos](const Blockstate *block, const Position position, std::shared_ptr<World> _) -> bool
                                            {
                                                 std::string block_name = block->GetName();
                                                 if (
-                                                    crops.count(block_name) && block->GetVariableValue("age") == "7") 
+                                                    crops.count(block_name) && 
+                                                    block->GetVariableValue("age") == "7" &&
+                                                    abs(position.y - workstation_pos.y) < 2
+                                                )
                                                 {
                                                     std::pair<string, Position> crop_pair;
                                                     crop_pair.first = crops.at(block_name);
@@ -322,42 +328,39 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
         return Status::Failure;
     }
     // Scan for blocks that need a little shaving
-    std::vector<Position> water_blocks = client.findBlocks("minecraft:water", 7, 10, workstation_pos);
+    Position water = client.findNearestBlock("minecraft:water", 7, workstation_pos);
     std::set<Position> candidate_blocks;
     std::set<Position> empty_farmland_blocks;
-    for (auto water : water_blocks)
-    {
-        std::shared_ptr<World> world = client.GetWorld();
+    std::shared_ptr<World> world = client.GetWorld();
 
-        for (int y = water.y - 2; y <= water.y + 2; y++)
+    for (int y = water.y - 2; y <= water.y + 2; y++)
+    {
+        for (int x = water.x - 4; x <= water.x + 4; x++)
         {
-            for (int x = water.x - 4; x <= water.x + 4; x++)
+            for (int z = water.z - 4; z <= water.z + 4; z++)
             {
-                for (int z = water.z - 4; z <= water.z + 4; z++)
+                const Position current = Position(x, y, z);
+                const Blockstate *block = world->GetBlock(current);
+                if (block == nullptr)
                 {
-                    const Position current = Position(x, y, z);
-                    const Blockstate *block = world->GetBlock(current);
-                    if (block == nullptr)
+                    continue;
+                }
+                const std::string block_name = block->GetName();
+                if (block_name == "minecraft:dirt" || block_name == "minecraft:grass_block")
+                {
+                    const Blockstate *upper_block = world->GetBlock(Position(x, y + 1, z));
+                    if (upper_block != nullptr && upper_block->IsAir())
                     {
-                        continue;
+                        candidate_blocks.insert(current);
+                        empty_farmland_blocks.insert(current);
                     }
-                    const std::string block_name = block->GetName();
-                    if (block_name == "minecraft:dirt" || block_name == "minecraft:grass_block")
+                }
+                else if (block_name == "minecraft:farmland")
+                {
+                    const Blockstate *upper_block = world->GetBlock(Position(x, y + 1, z));
+                    if (upper_block == nullptr || upper_block->IsAir())
                     {
-                        const Blockstate *upper_block = world->GetBlock(Position(x, y + 1, z));
-                        if (upper_block != nullptr && upper_block->IsAir())
-                        {
-                            candidate_blocks.insert(current);
-                            empty_farmland_blocks.insert(current);
-                        }
-                    }
-                    else if (block_name == "minecraft:farmland")
-                    {
-                        const Blockstate *upper_block = world->GetBlock(Position(x, y + 1, z));
-                        if (upper_block == nullptr || upper_block->IsAir())
-                        {
-                            empty_farmland_blocks.insert(current);
-                        }
+                        empty_farmland_blocks.insert(current);
                     }
                 }
             }

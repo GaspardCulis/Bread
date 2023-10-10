@@ -13,6 +13,7 @@ const std::vector<std::string> edible_items({"minecraft:rabbit_stew",
                                              "minecraft:mushroom_stew",
                                              "minecraft:suspicious_stew",
                                              "minecraft:pumpkin_pie",
+                                             "minecraft:bread",
                                              "minecraft:baked_potato",
                                              "minecraft:cooked_cod",
                                              "minecraft:cooked_rabbit",
@@ -52,9 +53,8 @@ Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const i
 
             if (
                 block_name.size() >= bed_suffix.size() &&
-                0 == block_name.compare(block_name.size() - bed_suffix.size(), bed_suffix.size(), bed_suffix) &&
-                world->GetBlock(down)->GetName() == "minecraft:gold_block")
-            {
+                0 == block_name.compare(block_name.size() - bed_suffix.size(), bed_suffix.size(), bed_suffix)
+            ) {
                 b.Set("SurvivalTasks.bed_pos", position);
                 LOG_INFO(block_name << "found at: " << position << "!");
             }
