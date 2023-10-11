@@ -15,7 +15,7 @@
 #include "AdvancedClient.hpp"
 #include "tasks/SurvivalTasks.hpp"
 
-#define NUM_BOTS 2
+#define NUM_BOTS 3
 
 using namespace std;
 
@@ -27,7 +27,8 @@ int main(int argc, char *argv[])
 {
     std::string bot_names[NUM_BOTS] = {
         "Maurice",
-        "Gertrude"
+        "Gertrude",
+        "Karlos"
     };
     
     std::vector<std::shared_ptr<Botcraft::World>> shared_worlds(NUM_BOTS);
@@ -80,6 +81,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateMauriceTree()
                     .leaf(SkyblockTasks::InitializeBlocks, 64)
                     .leaf(AdvancedTasks::FindNamedChestBlackboard, "cobblestone", "Storage.cobblestone")
                     .leaf(AdvancedTasks::FindNamedChestBlackboard, "wood", "Storage.wood")
+                    .leaf(AdvancedTasks::FindNamedChestBlackboard, "farming", "Storage.farming")
                 .end()
             .end()
             .sequence()
