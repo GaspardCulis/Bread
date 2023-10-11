@@ -1,42 +1,112 @@
+#include <chrono>
 #include <iostream>
 #include <botcraft/AI/SimpleBehaviourClient.hpp>
 #include <botcraft/AI/BehaviourTree.hpp>
 #include <botcraft/AI/Tasks/AllTasks.hpp>
+#include <memory>
 #include <unistd.h>
 #include <string>
+#include "botcraft/Game/World/World.hpp"
+#include "botcraft/Utilities/SleepUtilities.hpp"
+#include "tasks/FarmingTasks.hpp"
 #include "tasks/SkyblockTasks.hpp"
 #include "AdvancedClient.hpp"
+#include "tasks/SurvivalTasks.hpp"
+
+#define NUM_BOTS 2
 
 using namespace std;
 
-std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree();
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateMauriceTree();
+
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateGertrudeTree();
 
 int main(int argc, char *argv[])
 {
-    AdvancedClient client;
-    client.Connect("127.0.0.1:25565", "Maurice");
-    client.SetAutoRespawn(true);
+    std::string bot_names[NUM_BOTS] = {
+        "Maurice",
+        "Gertrude"
+    };
+    
+    std::vector<std::shared_ptr<Botcraft::World>> shared_worlds(NUM_BOTS);
+    for (int i = 0; i < NUM_BOTS; i++) {
+        shared_worlds[i] = std::make_shared<Botcraft::World>(true);
+    }
+    
+    std::vector<std::shared_ptr<AdvancedClient>> clients(NUM_BOTS);
+    for (int i = 0; i < NUM_BOTS; i++) {
+        clients[i] = std::make_shared<AdvancedClient>();
+        
+        clients[i]->SetSharedWorld(shared_worlds[i]);
+        clients[i]->SetAutoRespawn(true);
+        clients[i]->Connect("127.0.0.1:25565", bot_names[i]);
+        clients[i]->StartBehaviour();
+        if (i == 0) {
+            clients[i]->SetBehaviourTree(CreateMauriceTree());
+        } else if (i == 1) {
+            clients[i]->SetBehaviourTree(CreateGertrudeTree());
+        }
 
-    sleep(5);
+        Botcraft::Utilities::SleepFor(std::chrono::seconds(2));
+    }
 
-    client.SetBehaviourTree(CreateTree());
-    client.StartBehaviour();
-    client.RunBehaviourUntilClosed();
-
-    while (true)
+    std::vector<std::thread> behaviours_threads(NUM_BOTS);
+    for (int i = 0; i < NUM_BOTS; ++i)
     {
-        sleep(1);
+        behaviours_threads[i] = std::thread(&AdvancedClient::RunBehaviourUntilClosed, clients[i]);
+        // Start all the behaviours with a 2 seconds interval
+        Botcraft::Utilities::SleepFor(std::chrono::seconds(2));
+    }
+
+    // Wait for all the bots to disconnect (meaning the job is done if everything worked properly)
+    for (int i = 0; i < NUM_BOTS; ++i)
+    {
+        behaviours_threads[i].join();
     }
 
     return 0;
 }
 
-std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateTree()
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateMauriceTree()
 {
     // clang-format off
     return Botcraft::Builder<AdvancedClient>()
         .sequence()
-            .tree(SkyblockTasks::CreateTree())
+            .selector()
+                .leaf(CheckBlackboardBoolData, "SkyblockTasks.initialized")
+                .sequence()
+                    .leaf(SkyblockTasks::InitializeBlocks, 64)
+                .end()
+            .end()
+            .sequence()
+                .tree(SurvivalTasks::CreateTree())
+                .leaf(SkyblockTasks::ChopTrees)
+                .repeater(16)
+                .leaf(SkyblockTasks::MineCobblestone)
+                .leaf(SkyblockTasks::StoreItems)
+                .leaf(FarmingTasks::CompostVegetables, "minecraft:oak_sapling", 32)
+            .end()
+        .end();
+    // clang-format on
+}
+
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateGertrudeTree()
+{
+    // clang-format off
+    return Botcraft::Builder<AdvancedClient>()
+        .sequence()
+            .selector()
+                .leaf(CheckBlackboardBoolData, "SkyblockTasks.initialized")
+                .sequence()
+                    .leaf(SkyblockTasks::InitializeBlocks, 64)
+                .end()
+            .end()
+            .sequence()
+                .tree(SurvivalTasks::CreateTree())
+                .leaf(SkyblockTasks::StoreItems)
+                .leaf(FarmingTasks::CompostVegetables, "minecraft:wheat_seeds", 32)
+            .end()
+            .leaf(SkyblockTasks::Farm)
         .end();
     // clang-format on
 }

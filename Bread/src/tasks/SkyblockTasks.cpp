@@ -244,8 +244,6 @@ Botcraft::Status SkyblockTasks::Farm(AdvancedClient &client)
         FarmingTasks::CollectCropsAndReplant(client, 3);
         FarmingTasks::MaintainField(client);
     }
-    FarmingTasks::CompostVegetables(client, "minecraft:oak_sapling", 32);
-    FarmingTasks::CompostVegetables(client, "minecraft:wheat_seeds", 32);
 
     return Status::Success;
 }
