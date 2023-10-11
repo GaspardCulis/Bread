@@ -206,33 +206,6 @@ Status SkyblockTasks::MineCobblestone(AdvancedClient &client)
     return Status::Success;
 }
 
-Status SkyblockTasks::StoreItems(AdvancedClient &client)
-{
-    LOG_INFO("[StoreItems] Started task");
-    
-    Blackboard &b = client.GetBlackboard();
-    AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:cobblestone", 32, 64);
-    AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:oak_log", 32, 64);
-    AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:bone_meal", 0, 8);
-    AdvancedTasks::EnsureItemCount(client, b.Get<Position>("SkyblockTasks.chest_pos"), "minecraft:wheat", 0, 3);
-/*
-    LogInventoryContent(client);
-
-    auto recipes = CraftingUtils::GetAvailableRecipes(client, "minecraft:stone_pickaxe");
-    LOG_INFO("There are " << recipes.size() << " recipes for pick");
-    auto recipe = recipes[0];
-    if (CraftingUtils::CanCraft(client, recipe))
-    {
-        LOG_INFO("Hey, I can craft pickaxe !");
-    }
-    else
-    {
-        LOG_INFO("Bruh can't craft pixk");
-    }
-*/
-    return Status::Success;
-}
-
 Botcraft::Status SkyblockTasks::Farm(AdvancedClient &client)
 {
     Botcraft::Blackboard &b = client.GetBlackboard();
@@ -264,7 +237,10 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SkyblockTasks::CreateTr
                 .leaf(ChopTrees)
                 .repeater(16)
                 .leaf(MineCobblestone)
-                .leaf(StoreItems)
+                .sequence("Store items")
+                    .leaf(AdvancedTasks::StoreItemsBlackboard, "SkyblockTasks.chest_pos", "minecraft:cobblestone", 32, 64)
+                    .leaf(AdvancedTasks::StoreItemsBlackboard, "SkyblockTasks.chest_pos", "minecraft:oak_log", 8, 32)
+                .end()
             .end()
             .leaf(SkyblockTasks::Farm)
         .end();

@@ -27,14 +27,23 @@ namespace AdvancedTasks
     /// @return Success if the bed found, Failure otherwise
     Botcraft::Status DigAndCollect(AdvancedClient &client, const Position position);
 
-    /// @brief Ensures there is the required count of items in the inventory, storing/retriving them in/from a container
+    /// @brief Stores a given item in a given container if the client has more than the max count, and keeps at least the min count
     /// @param client The client performing the action
     /// @param storage_pos The storage position
     /// @param item The item to check
     /// @param min The inclusive minimum count
     /// @param max The inclusive maximum count
-    /// @return Success if the item count is correct, Failure otherwise
-    Botcraft::Status EnsureItemCount(AdvancedClient &client, const Position storage_pos, const std::string &item_name, const int min, const int max);
+    /// @return Success if the items could be stored, Failure otherwise
+    Botcraft::Status StoreItems(AdvancedClient &client, const Position storage_pos, const std::string &item_name, const int min, const int max);
+
+    /// @brief Stores a given item in a given container if the client has more than the max count, and keeps at least the min count
+    /// @param client The client performing the action
+    /// @param storage_pos_blackboard_key The blackboard key containing the storage position
+    /// @param item The item to check
+    /// @param min The inclusive minimum count
+    /// @param max The inclusive maximum count
+    /// @return Success if the items could be stored, Failure otherwise
+    Botcraft::Status StoreItemsBlackboard(AdvancedClient &client, const std::string &storage_pos_blackboard_key, const std::string &item_name, const int min, const int max);
 
     /// @brief Finds the nearest block and stores its position to a blackboard entry
     /// @param client The client performing the action

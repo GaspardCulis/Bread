@@ -208,8 +208,9 @@ Botcraft::Status StoreSingleItemInContainer(AdvancedClient &client, const std::s
     return Status::Success;
 }
 
-Botcraft::Status AdvancedTasks::EnsureItemCount(AdvancedClient &client, const Position storage_pos, const std::string &item_name, const int min, const int max)
+Botcraft::Status AdvancedTasks::StoreItems(AdvancedClient &client, const Position storage_pos, const std::string &item_name, const int min, const int max)
 {
+    LOG_INFO("[StoreItems] Started task");
     const int count = client.getItemCountInInventory(item_name);
     if (count >= min && count <= max) {
         return Botcraft::Status::Success;
@@ -244,12 +245,20 @@ Botcraft::Status AdvancedTasks::EnsureItemCount(AdvancedClient &client, const Po
         }   
     }
     
-
-    // TODO Item retreaving
-
     CloseContainer(client);
 
     return Status::Failure;
+}
+
+Botcraft::Status AdvancedTasks::StoreItemsBlackboard(AdvancedClient &client, const std::string &storage_pos_blackboard_key, const std::string &item_name, const int min, const int max) {
+    auto b = client.GetBlackboard();
+    const Position storage_pos = b.Get<Position>(storage_pos_blackboard_key, Position(0));
+    if (storage_pos == Position(0)) {
+        LOG_WARNING("[StoreItemBlackboard] Called without a valid storage_pos_blackboard_key");
+        return Status::Failure;
+    }
+
+    return StoreItems(client, storage_pos, item_name, min, max);
 }
 
 Botcraft::Status AdvancedTasks::FindNearestBlockBlackboard(AdvancedClient &client, const std::string block_name, const std::string blackboard_key) {
