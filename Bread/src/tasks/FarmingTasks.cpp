@@ -441,12 +441,10 @@ Botcraft::Status FarmingTasks::MaintainField(AdvancedClient &client)
 
 Botcraft::Status FarmingTasks::CompostVegetables(AdvancedClient &client, const std::string item_name, const int keep_count)
 {
-    Botcraft::Blackboard &b = client.GetBlackboard();
-
-    const Position &workstation_pos = b.Get<Position>("FarmingTasks.farming_workstation_pos", Position(0));
+    const Position &workstation_pos = client.findNearestBlock("minecraft:composter");
     if (workstation_pos == Position(0))
     {
-        LOG_WARNING("[CompostVegetables] Called Fish task with an un-initialized blackboard workstation pos.");
+        LOG_WARNING("[CompostVegetables] Couldn't find composter");
         return Status::Failure;
     }
 

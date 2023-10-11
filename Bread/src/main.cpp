@@ -6,6 +6,7 @@
 #include <memory>
 #include <unistd.h>
 #include <string>
+#include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Game/World/World.hpp"
 #include "botcraft/Utilities/SleepUtilities.hpp"
 #include "tasks/FarmingTasks.hpp"
@@ -103,10 +104,10 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateGertrudeTree()
             .end()
             .sequence()
                 .tree(SurvivalTasks::CreateTree())
-                .leaf(SkyblockTasks::StoreItems)
+                .leaf(SkyblockTasks::Farm)
                 .leaf(FarmingTasks::CompostVegetables, "minecraft:wheat_seeds", 32)
+                .leaf(SkyblockTasks::StoreItems)
             .end()
-            .leaf(SkyblockTasks::Farm)
         .end();
     // clang-format on
 }
