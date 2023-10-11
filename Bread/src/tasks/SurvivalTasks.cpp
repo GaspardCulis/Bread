@@ -56,7 +56,7 @@ Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const i
                 0 == block_name.compare(block_name.size() - bed_suffix.size(), bed_suffix.size(), bed_suffix)
             ) {
                 b.Set("SurvivalTasks.bed_pos", position);
-                LOG_INFO(block_name << "found at: " << position << "!");
+                LOG_INFO(block_name << " found at: " << position << "!");
             }
 
             return false;

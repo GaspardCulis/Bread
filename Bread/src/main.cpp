@@ -9,6 +9,7 @@
 #include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Game/World/World.hpp"
 #include "botcraft/Utilities/SleepUtilities.hpp"
+#include "tasks/AdvancedTasks.hpp"
 #include "tasks/FarmingTasks.hpp"
 #include "tasks/SkyblockTasks.hpp"
 #include "AdvancedClient.hpp"
@@ -77,6 +78,8 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateMauriceTree()
                 .leaf(CheckBlackboardBoolData, "SkyblockTasks.initialized")
                 .sequence()
                     .leaf(SkyblockTasks::InitializeBlocks, 64)
+                    .leaf(AdvancedTasks::FindNamedChestBlackboard, "cobblestone", "Storage.cobblestone")
+                    .leaf(AdvancedTasks::FindNamedChestBlackboard, "wood", "Storage.wood")
                 .end()
             .end()
             .sequence()
@@ -100,6 +103,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateGertrudeTree()
                 .leaf(CheckBlackboardBoolData, "SkyblockTasks.initialized")
                 .sequence()
                     .leaf(SkyblockTasks::InitializeBlocks, 64)
+                    .leaf(AdvancedTasks::FindNamedChestBlackboard, "farming", "Storage.farming")
                 .end()
             .end()
             .sequence()

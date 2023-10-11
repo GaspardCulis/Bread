@@ -10,7 +10,12 @@
 #include "botcraft/Game/Inventory/InventoryManager.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
 #include "botcraft/Game/Vector3.hpp"
+#include "botcraft/Game/World/Blockstate.hpp"
+#include "botcraft/Game/World/World.hpp"
 #include "botcraft/Utilities/Logger.hpp"
+#include "protocolCraft/Types/NBT/NBT.hpp"
+#include "protocolCraft/Types/NBT/Tag.hpp"
+#include "protocolCraft/Utilities/Json.hpp"
 #include <cmath>
 #include <memory>
 #include <stdexcept>
@@ -257,3 +262,51 @@ Botcraft::Status AdvancedTasks::FindNearestBlockBlackboard(AdvancedClient &clien
 
     return Status::Success;
 }
+
+Botcraft::Status AdvancedTasks::FindNamedChestBlackboard(AdvancedClient &client, const std::string text, const std::string blackboard_key) {
+    try {
+        auto chest_pos = client.findNearestBlock(
+            [text](const Blockstate *block, Position position, std::shared_ptr<World> world) -> bool
+            {
+                if (block->GetName() == "minecraft:chest") {
+                    const std::string suffix = "_wall_sign";
+                    // Check all places where a sign can be placed on the chest
+                    for (auto offset : {
+                        Position(0, 0, 1),
+                        Position(1, 0, 0),
+                        Position(0, 0, -1),
+                        Position(-1, 0, 0),
+                    }) {
+                        const std::string block_name = world->GetBlock(offset + position)->GetName();
+                        // If is a sign of any type
+                        if (block_name.size() >= suffix.size() && 
+                            block_name.compare(block_name.size() - suffix.size(), suffix.size(), suffix) == 0
+                        ) {
+                            const auto ed = world->GetBlockEntityData(position + offset);
+                            const auto messages = ed["front_text"]["messages"];
+                            for (auto line : messages.as_list_of<ProtocolCraft::NBT::TagString>()) {
+                                const ProtocolCraft::Json::Value content = ProtocolCraft::Json::Parse(line);
+                                if (content.is_object() && 
+                                    content.contains("text") &&
+                                    content["text"].get_string() == text 
+                                ) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        );
+
+        client.GetBlackboard().Set(blackboard_key, chest_pos);
+
+        LOG_INFO("Chest having " << text << " text found at " << chest_pos);
+        return Status::Success;
+    } catch (std::range_error) {
+        return Status::Failure;
+    }
+    
+}
+

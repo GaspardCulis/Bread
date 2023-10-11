@@ -39,7 +39,14 @@ namespace AdvancedTasks
     /// @brief Finds the nearest block and stores its position to a blackboard entry
     /// @param client The client performing the action
     /// @param block_name The searched block name
-    /// @param blackboard_index The blackboard index where the position will be stored
+    /// @param blackboard_key The blackboard index where the position will be stored
     /// @return Success if the block has been found, Failure otherwise
     Botcraft::Status FindNearestBlockBlackboard(AdvancedClient &client, const std::string block_name, const std::string blackboard_index);
+
+    /// @brief Finds the nearest chest with a sign having a line matching text
+    /// @param client The client performing the action
+    /// @param text The text that should be on the sign
+    /// @param blackboard_key The blackboard index where the position will be stored
+    /// @return Success if the block has been found, Failure otherwise
+    Botcraft::Status FindNamedChestBlackboard(AdvancedClient &client, const std::string text, const std::string blackboard_key);
 }
