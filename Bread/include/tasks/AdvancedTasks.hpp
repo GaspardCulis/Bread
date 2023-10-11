@@ -29,11 +29,17 @@ namespace AdvancedTasks
 
     /// @brief Ensures there is the required count of items in the inventory, storing/retriving them in/from a container
     /// @param client The client performing the action
-    /// @param client The storage position
+    /// @param storage_pos The storage position
     /// @param item The item to check
     /// @param min The inclusive minimum count
     /// @param max The inclusive maximum count
     /// @return Success if the item count is correct, Failure otherwise
     Botcraft::Status EnsureItemCount(AdvancedClient &client, const Position storage_pos, const std::string &item_name, const int min, const int max);
 
+    /// @brief Finds the nearest block and stores its position to a blackboard entry
+    /// @param client The client performing the action
+    /// @param block_name The searched block name
+    /// @param blackboard_index The blackboard index where the position will be stored
+    /// @return Success if the block has been found, Failure otherwise
+    Botcraft::Status FindNearestBlockBlackboard(AdvancedClient &client, const std::string block_name, const std::string blackboard_index);
 }

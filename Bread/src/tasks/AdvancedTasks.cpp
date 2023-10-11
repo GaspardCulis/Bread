@@ -13,6 +13,7 @@
 #include "botcraft/Utilities/Logger.hpp"
 #include <cmath>
 #include <memory>
+#include <stdexcept>
 #include <unordered_map>
 
 Botcraft::Status AdvancedTasks::CollectItem(AdvancedClient &client, int id)
@@ -244,4 +245,15 @@ Botcraft::Status AdvancedTasks::EnsureItemCount(AdvancedClient &client, const Po
     CloseContainer(client);
 
     return Status::Failure;
+}
+
+Botcraft::Status AdvancedTasks::FindNearestBlockBlackboard(AdvancedClient &client, const std::string block_name, const std::string blackboard_key) {
+    try {
+        Position block_pos = client.findNearestBlock(block_name);
+        client.GetBlackboard().Set(blackboard_key, block_pos);
+    } catch (std::range_error) {
+        return Status::Failure;
+    }
+
+    return Status::Success;
 }
