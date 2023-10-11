@@ -247,7 +247,7 @@ Botcraft::Status AdvancedTasks::StoreItems(AdvancedClient &client, const Positio
     
     CloseContainer(client);
 
-    return Status::Failure;
+    return Status::Success;
 }
 
 Botcraft::Status AdvancedTasks::StoreItemsBlackboard(AdvancedClient &client, const std::string &storage_pos_blackboard_key, const std::string &item_name, const int min, const int max) {
