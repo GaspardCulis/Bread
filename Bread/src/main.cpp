@@ -20,8 +20,8 @@
 using namespace std;
 
 std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateMauriceTree();
-
 std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateGertrudeTree();
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateKarlosTree();
 
 int main(int argc, char *argv[])
 {
@@ -42,12 +42,21 @@ int main(int argc, char *argv[])
         
         clients[i]->SetSharedWorld(shared_worlds[i]);
         clients[i]->SetAutoRespawn(true);
+        // Assign unique ID
         clients[i]->Connect("127.0.0.1:25565", bot_names[i]);
         clients[i]->StartBehaviour();
         if (i == 0) {
-            clients[i]->SetBehaviourTree(CreateMauriceTree());
+            clients[i]->SetBehaviourTree(CreateMauriceTree(), {
+                { "id", i }
+            });
         } else if (i == 1) {
-            clients[i]->SetBehaviourTree(CreateGertrudeTree());
+            clients[i]->SetBehaviourTree(CreateGertrudeTree(), {
+                { "id", i }
+            });
+        } else if (i == 2) {
+            clients[i]->SetBehaviourTree(CreateKarlosTree(), {
+                { "id", i }
+            });
         }
 
         Botcraft::Utilities::SleepFor(std::chrono::seconds(2));
@@ -121,6 +130,16 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateGertrudeTree()
                     .leaf(AdvancedTasks::StoreItemsBlackboard, "Storage.farming", "minecraft:bone_meal", 0, 8)
                 .end()
             .end()
+        .end();
+    // clang-format on
+}
+
+std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateKarlosTree()
+{
+    // clang-format off
+    return Botcraft::Builder<AdvancedClient>()
+        .sequence()
+            .tree(SurvivalTasks::CreateTree())
         .end();
     // clang-format on
 }

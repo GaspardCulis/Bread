@@ -1,4 +1,6 @@
 #include "tasks/SurvivalTasks.hpp"
+#include "botcraft/Game/Vector3.hpp"
+#include "botcraft/Utilities/Logger.hpp"
 
 // https://minecraft.fandom.com/wiki/Food
 const std::vector<std::string> edible_items({"minecraft:rabbit_stew",
@@ -44,6 +46,7 @@ Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const i
 {
     Botcraft::Blackboard &b = client.GetBlackboard();
 
+    /*
     auto _ = client.findBlocks(
         [&b](const Blockstate *block, const Position position, std::shared_ptr<World> world) -> bool
         {
@@ -62,6 +65,7 @@ Botcraft::Status SurvivalTasks::InitializeBlocks(AdvancedClient &client, const i
             return false;
         },
         search_radius);
+    */
 
     b.Set("SurvivalTasks.initialized", true);
     LOG_INFO("Blocks initialized");
@@ -84,6 +88,46 @@ Botcraft::Status SurvivalTasks::FindBestFoodInInventory(AdvancedClient &client)
 
     Botcraft::Blackboard &b = client.GetBlackboard();
     b.Set<std::string>("SurvivalTasks.best_food_in_inventory", edible_items[i]);
+
+    return Status::Success;
+}
+
+// TODO: Fix save bed but different block issue
+Botcraft::Status SurvivalTasks::FindUniqueBedBlackboard(AdvancedClient &client, const std::string blackboard_key) {
+    Botcraft::Blackboard &b = client.GetBlackboard();
+
+    const int id = b.Get("id", 0);
+
+    auto beds = client.findBlocks(
+        [](const Blockstate *block, const Position position, std::shared_ptr<World> world) -> bool
+        {
+            Position down = position + Position(0, -1, 0);
+            const std::string &block_name = block->GetName();
+            const std::string bed_suffix = "_bed";
+
+            if (
+                block_name.size() >= bed_suffix.size() &&
+                0 == block_name.compare(block_name.size() - bed_suffix.size(), bed_suffix.size(), bed_suffix)
+            ) {
+                return true;
+            }
+
+            return false;
+        }
+    );
+
+    if (beds.size() == 0) {
+        LOG_WARNING("[FindUniqueBedBlackboard] No bed found");
+        return Status::Failure;
+    }
+
+    std::sort(beds.begin(), beds.end());
+
+    Position bed_pos = beds[id % beds.size()];
+
+    LOG_INFO("[FindUniqueBedBlackboard] Found bed at " << bed_pos << " for unique id " << id);
+
+    b.Set(blackboard_key, bed_pos);
 
     return Status::Success;
 }
@@ -144,6 +188,7 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> SurvivalTasks::CreateTr
                 .leaf(CheckBlackboardBoolData, "SurvivalTasks.initialized")
                 .sequence()
                     .leaf(SurvivalTasks::InitializeBlocks, 128)
+                    .leaf(SurvivalTasks::FindUniqueBedBlackboard, "SurvivalTasks.bed_pos")
                 .end()
             .end()
             .tree(CreateSleepTree())
