@@ -9,6 +9,7 @@
 #include "botcraft/Game/Entities/entities/projectile/FishingHookEntity.hpp"
 #include "botcraft/Network/NetworkManager.hpp"
 #include <cmath>
+#include <unordered_set>
 
 const vector<string> need_fishing_rod_messages({"Yo, hook me up with a fishing rod, cuz I ain't catchin' nothin' with my bare hands.",
                                                 "Listen up, homie, I need a fishing rod like a fish needs water.",
@@ -260,12 +261,11 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
                                                 return false; },
                                            crops_radius, -1, workstation_pos);
 
-    for (auto crop : grown_crops)
-    {
-        // Collect
-        if (AdvancedTasks::DigAndCollect(client, crop.second) == Status::Failure)
+    for (auto crop : grown_crops) {
+        // Break
+        if (Dig(client, crop.second) == Status::Failure)
         {
-            LOG_WARNING("[Farming] Couldn't collect crop drops for " << crop.first);
+            LOG_WARNING("[Farming] Couldn't break crop " << crop.first << " at " << crop.second);
         }
         // Replant
         int i = 0;
@@ -278,6 +278,12 @@ Botcraft::Status FarmingTasks::CollectCropsAndReplant(AdvancedClient &client, co
         {
             LOG_WARNING("[Farming] Couldn't replant " << crop.first);
         }
+    }
+
+    // Collect
+    for (auto crop : crops) {
+        AdvancedTasks::CollectItems(client, crop.first, crops_radius + 4);
+        AdvancedTasks::CollectItems(client, crop.second, crops_radius + 4);
     }
 
     return Status::Success;
