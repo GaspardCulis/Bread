@@ -201,7 +201,10 @@ Status SkyblockTasks::MineCobblestone(AdvancedClient &client)
         client.Yield();
     }
 
+    // Suboptimal
     SetItemInHand(client, "minecraft:stone_pickaxe");
+    SetItemInHand(client, "minecraft:iron_pickaxe");
+    SetItemInHand(client, "minecraft:diamond_pickaxe");
     if (Dig(client, stone_pos) == Status::Failure)
     {
         LOG_WARNING("[MineCobblestone] Failed to dig stone");
