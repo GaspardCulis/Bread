@@ -68,7 +68,7 @@ Botcraft::Status FarmingTasks::InitializeBlocks(AdvancedClient &client, const in
         {
             Position down = position + Position(0, -1, 0);
 
-            if (block->GetName() == "minecraft:barrel" && world->GetBlock(down)->GetName() == "minecraft:gold_block")
+            if (block->GetName() == "minecraft:barrel" && world->GetBlock(down)->GetName() == "minecraft:pumpkin")
             {
                 b.Set("FarmingTasks.fishing_workstation_pos", position);
                 LOG_INFO("Fishing workstation found at: " << position << "!");

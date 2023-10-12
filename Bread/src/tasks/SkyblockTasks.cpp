@@ -1,6 +1,7 @@
 #include "tasks/SkyblockTasks.hpp"
 #include "CraftingUtils.hpp"
 #include "botcraft/AI/Status.hpp"
+#include "botcraft/AI/Tasks/BaseTasks.hpp"
 #include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Utilities/Logger.hpp"
 #include "tasks/AdvancedTasks.hpp"
@@ -224,6 +225,15 @@ Botcraft::Status SkyblockTasks::Farm(AdvancedClient &client)
 
         FarmingTasks::CollectCropsAndReplant(client, 3);
         FarmingTasks::MaintainField(client);
+
+        if (Botcraft::IsHungry(client) == Status::Success) {
+            if (SurvivalTasks::FindBestFoodInInventory(client) == Status::Success) {
+                client.resetOTM("SkyblockTasks.need_food");
+                Botcraft::Eat(client, b.Get<std::string>("SurvivalTasks.best_food_in_inventory"));
+            } else {
+                client.sendOTM("I'm gonna starve to death lol", "SkyblockTasks.need_food");
+            }
+        }
     }
 
     return Status::Success;
