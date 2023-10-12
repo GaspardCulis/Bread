@@ -141,7 +141,12 @@ Status SkyblockTasks::ChopTrees(AdvancedClient &client)
                 }
             }
             Botcraft::Position trunk_block = trunk[i];
+
+            // Suboptimal
+            SetItemInHand(client, "minecraft:diamond_axe");
+            SetItemInHand(client, "minecraft:iron_axe");
             SetItemInHand(client, "minecraft:stone_axe");
+            
             if (Dig(client, trunk_block) == Status::Failure)
             {
                 LOG_WARNING("[ChopTrees] Failed to dig block at " << trunk_block);
