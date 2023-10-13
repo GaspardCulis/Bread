@@ -12,7 +12,10 @@ namespace CraftingUtils {
     const ProtocolCraft::Slot GetResult(const ProtocolCraft::Recipe &recipe);
 
     /// @brief Gets the ingredients for a generic recipe
-    const std::vector<ProtocolCraft::Ingredient> GetIngredients(ProtocolCraft::Recipe &recipe);
+    const std::vector<ProtocolCraft::Ingredient> GetIngredients(const ProtocolCraft::Recipe &recipe);
+
+    /// @brief Gets the workstation block name for a generic recipe
+    const std::string GetWorkstation(const ProtocolCraft::Recipe &recipe);
 
     /// @brief Gets all available recipes to craft a given item given an AdvancedClient recipe list
     std::vector<ProtocolCraft::Recipe> GetAvailableRecipes(AdvancedClient& client, const std::string& item_name);

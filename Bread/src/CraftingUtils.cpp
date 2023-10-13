@@ -68,7 +68,7 @@ const ProtocolCraft::Slot CraftingUtils::GetResult(const ProtocolCraft::Recipe &
 
 }
 
-const std::vector<ProtocolCraft::Ingredient> CraftingUtils::GetIngredients(ProtocolCraft::Recipe &recipe)
+const std::vector<ProtocolCraft::Ingredient> CraftingUtils::GetIngredients(const ProtocolCraft::Recipe &recipe)
 {
     const ProtocolCraft::Identifier &recipe_type = recipe.GetType();
 
@@ -116,7 +116,50 @@ const std::vector<ProtocolCraft::Ingredient> CraftingUtils::GetIngredients(Proto
     else 
     {
         return std::vector<ProtocolCraft::Ingredient> ();
-    }}
+    }
+}
+
+const std::string CraftingUtils::GetWorkstation(const ProtocolCraft::Recipe &recipe)
+{
+    const ProtocolCraft::Identifier &recipe_type = recipe.GetType();
+
+    if (recipe_type.GetFull() == "minecraft:crafting_shapeless")
+    {
+        return "minecraft:crafting_table";
+    }
+    else if (recipe_type.GetFull() == "minecraft:crafting_shaped")
+    {
+        return "minecraft:crafting_table";
+    }
+    else if (recipe_type.GetFull() == "minecraft:smelting")
+    {
+        return "minecraft:furnace";
+    }
+#if PROTOCOL_VERSION > 452 /* > 1.13.2 */
+    else if (recipe_type.GetFull() == "minecraft:blasting")
+    {
+        return "minecraft:blast_furnace";
+    }
+    else if (recipe_type.GetFull() == "minecraft:smoking")
+    {
+        return "minecraft:smoker";
+    }
+    else if (recipe_type.GetFull() == "minecraft:campfire_cooking")
+    {
+        return "minecraft:campfire";
+    }
+    else if (recipe_type.GetFull() == "minecraft:stonecutting")
+    {
+        return "minecraft:stonecutter";
+    }
+#endif
+    // TODO Smithing
+    else 
+    {
+        return "minecraft:crafting_table";
+    }
+
+}
 
 std::vector<ProtocolCraft::Recipe> CraftingUtils::GetAvailableRecipes(AdvancedClient& client, const std::string& item_name)
 {
