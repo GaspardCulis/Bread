@@ -139,6 +139,13 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateKarlosTree()
     // clang-format off
     return Botcraft::Builder<AdvancedClient>()
         .sequence()
+            .selector()
+                .leaf(CheckBlackboardBoolData, "FarmingTasks.initialized")
+                .sequence()
+                    .leaf(FarmingTasks::InitializeBlocks, 128)
+                .end()
+            .end()
+            .leaf(FarmingTasks::Fish)
             .tree(SurvivalTasks::CreateTree())
         .end();
     // clang-format on

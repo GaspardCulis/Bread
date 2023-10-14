@@ -96,7 +96,7 @@ Botcraft::Status FarmingTasks::Fish(AdvancedClient &client)
         return Status::Failure;
     }
 
-    if (GoTo(client, workstation_pos, 4, 4) == Status::Failure)
+    if (GoTo(client, workstation_pos, 2, 1) == Status::Failure)
     {
         LOG_WARNING("[Fish] Couldn't pathfind to fishing workstation");
         return Status::Failure;
