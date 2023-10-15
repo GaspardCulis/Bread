@@ -6,10 +6,12 @@
 #include <memory>
 #include <unistd.h>
 #include <string>
+#include "botcraft/AI/Tasks/InventoryTasks.hpp"
 #include "botcraft/Game/Vector3.hpp"
 #include "botcraft/Game/World/World.hpp"
 #include "botcraft/Utilities/SleepUtilities.hpp"
 #include "tasks/AdvancedTasks.hpp"
+#include "tasks/CraftingTasks.hpp"
 #include "tasks/FarmingTasks.hpp"
 #include "tasks/SkyblockTasks.hpp"
 #include "AdvancedClient.hpp"
@@ -98,6 +100,13 @@ std::shared_ptr<Botcraft::BehaviourTree<AdvancedClient>> CreateMauriceTree()
                 .leaf(SkyblockTasks::ChopTrees)
                 .repeater(16)
                 .leaf(SkyblockTasks::MineCobblestone)
+                .selector("Craft pick if required")
+                    .leaf(Botcraft::HasItemInInventory, "minecraft:stone_pickaxe", 2)
+                    .sequence()
+                        .leaf(CraftingTasks::CanCraft, "minecraft:stone_pickaxe")
+                        .leaf(CraftingTasks::Craft, "minecraft:stone_pickaxe")
+                    .end()
+                .end()
                 .sequence("Store items")
                     .leaf(AdvancedTasks::StoreItemsBlackboard, "Storage.cobblestone", "minecraft:cobblestone", 32, 64)
                     .leaf(AdvancedTasks::StoreItemsBlackboard, "Storage.wood", "minecraft:oak_log", 8, 32)

@@ -163,12 +163,12 @@ const std::string CraftingUtils::GetWorkstation(const ProtocolCraft::Recipe &rec
 const bool CraftingUtils::NeedsWorkstation(const ProtocolCraft::Recipe &recipe) {
     const ProtocolCraft::Identifier &recipe_type = recipe.GetType();
 
-    if (recipe_type.GetFull() == "minecraft:crafting_shapeless")
+    if (recipe_type.GetFull() == "minecraft:crafting_shaped")
     {
         auto shaped_recipe = std::dynamic_pointer_cast<ProtocolCraft::RecipeTypeDataShaped>(recipe.GetData());
         return shaped_recipe->GetWidth() > 2 && shaped_recipe->GetHeight() > 2;
     }
-    else if (recipe_type.GetFull() == "minecraft:crafting_shaped")
+    else if (recipe_type.GetFull() == "minecraft:crafting_shapeless")
     {
         auto shapeless_recipe = std::dynamic_pointer_cast<ProtocolCraft::RecipeTypeDataShapeless>(recipe.GetData());
         return shapeless_recipe->GetIngredients().size() > 4;
@@ -195,39 +195,60 @@ std::vector<ProtocolCraft::Recipe> CraftingUtils::GetAvailableRecipes(AdvancedCl
     return recipes;
 }
 
-std::map<short, int> CraftingUtils::GetIngredientsFromInventory(ManagersClient &client, ProtocolCraft::Recipe &recipe)
+const std::array<std::array<int, 3>, 3> CraftingUtils::CreateCraftingMatrix(ManagersClient &client, ProtocolCraft::Recipe &recipe)
 {
-    // map<ItemId, count>
-    std::map<short, int> out;
-    
+    std::array<std::array<int, 3>, 3> out {{
+        {-1, -1, -1},
+        {-1, -1, -1},
+        {-1, -1, -1},
+    }};
+    int w = 3;
+    int h = 3;
+
+    if (!NeedsWorkstation(recipe)) {
+        // Can be crafted in player's inventory
+        w = 2;
+        h = 2;
+    }
+
     auto ingredients = GetIngredients(recipe);
 
     // Clone player inventory
-    std::shared_ptr<InventoryManager> inventory_manager = client.GetInventoryManager();
-    std::lock_guard<std::mutex> inventory_lock(inventory_manager->GetMutex());
 
-    const std::map<short, ProtocolCraft::Slot> &slots = inventory_manager->GetPlayerInventory()->GetSlots();
     // map<itemId, count>
     std::map<short, int> abstract_inv;
-    for (auto it = slots.begin(); it != slots.end(); ++it)
     {
-        if (abstract_inv.count(it->first))
-            abstract_inv[it->second.GetItemID()] += (int) it->second.GetItemCount();
-        else
-            abstract_inv[it->second.GetItemID()] = (int) it->second.GetItemCount();
+        std::shared_ptr<InventoryManager> inventory_manager = client.GetInventoryManager();
+        std::lock_guard<std::mutex> inventory_lock(inventory_manager->GetMutex());
+
+        const std::map<short, ProtocolCraft::Slot> &slots = inventory_manager->GetPlayerInventory()->GetSlots();
+        for (auto it = slots.begin(); it != slots.end(); ++it)
+        {
+            if (abstract_inv.count(it->first))
+                abstract_inv[it->second.GetItemID()] += (int) it->second.GetItemCount();
+            else
+                abstract_inv[it->second.GetItemID()] = (int) it->second.GetItemCount();
+        }
     }
 
-    for (auto i : ingredients)
+    int x = 0;
+    int y = 0;
+    for (int i = 0; i < ingredients.size(); i++)
     {
-        if (i.GetItems().size() == 0) continue;
+        x = i % w;
+        y = i / h;
+
+        auto ing = ingredients[i];
+
+        if (ing.GetItems().size() == 0) continue;
         short found_item_id = -1;
         char found_item_count = 0;
-        for (auto p : i.GetItems())
+        for (auto slot : ing.GetItems())
         {
-            if (abstract_inv.count(p.GetItemID()) !=0 && abstract_inv[p.GetItemID()] >= p.GetItemCount())
+            if (abstract_inv.count(slot.GetItemID()) !=0 && abstract_inv[slot.GetItemID()] >= slot.GetItemCount())
             {
-                found_item_id = p.GetItemID();
-                found_item_count = p.GetItemCount();
+                found_item_id = slot.GetItemID();
+                found_item_count = slot.GetItemCount();
                 break;
             }
         }
@@ -237,8 +258,9 @@ std::map<short, int> CraftingUtils::GetIngredientsFromInventory(ManagersClient &
             throw std::out_of_range("Counld't find an item in inventory satisfaying ingredients for recipe");
         } 
         abstract_inv[found_item_id] -= found_item_count;
-        if (out.count(found_item_id) == 0) out[found_item_id] = 0;
-        out[found_item_id] += found_item_count;
+
+        out[y][x] = found_item_id;
+      
     }
 
     return out;
@@ -248,7 +270,7 @@ bool CraftingUtils::CanCraft(ManagersClient &client, ProtocolCraft::Recipe &reci
 {
     try
     {
-        auto _ = GetIngredientsFromInventory(client, recipe);
+        auto _ = CreateCraftingMatrix(client, recipe);
         return true;
     }
     catch (range_error)

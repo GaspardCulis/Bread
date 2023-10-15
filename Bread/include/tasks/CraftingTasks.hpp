@@ -6,4 +6,6 @@
 namespace CraftingTasks
 {
     Botcraft::Status CanCraft(AdvancedClient &client, const std::string &item_name);
+
+    Botcraft::Status Craft(AdvancedClient &client, const std::string &item_name);
 }

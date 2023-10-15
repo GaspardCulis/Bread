@@ -1,4 +1,5 @@
 #include "AdvancedClient.hpp"
+#include "CraftingUtils.hpp"
 #include "botcraft/Game/Inventory/InventoryManager.hpp"
 #include "botcraft/Game/Inventory/Item.hpp"
 #include "botcraft/Game/Inventory/Window.hpp"
@@ -7,6 +8,7 @@
 #include "botcraft/Utilities/Logger.hpp"
 #include "protocolCraft/Messages/Play/Clientbound/ClientboundUpdateRecipesPacket.hpp"
 #include "protocolCraft/Types/Recipes/Recipe.hpp"
+#include <stdexcept>
 #include <string>
 
 using namespace std::chrono;
