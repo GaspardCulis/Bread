@@ -171,14 +171,7 @@ const bool CraftingUtils::NeedsWorkstation(const ProtocolCraft::Recipe &recipe) 
     else if (recipe_type.GetFull() == "minecraft:crafting_shaped")
     {
         auto shapeless_recipe = std::dynamic_pointer_cast<ProtocolCraft::RecipeTypeDataShapeless>(recipe.GetData());
-        // Need to iterate because recipe contains empty ingredients for some reason
-        int count = 0;
-        for (auto ingredient : shapeless_recipe->GetIngredients()) {
-            if (ingredient.GetItems().size() > 0) {
-                count++;
-            }
-        }
-        return count > 4;
+        return shapeless_recipe->GetIngredients().size() > 4;
     }
     else 
     {
