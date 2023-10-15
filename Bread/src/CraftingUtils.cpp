@@ -119,8 +119,7 @@ const std::vector<ProtocolCraft::Ingredient> CraftingUtils::GetIngredients(const
     }
 }
 
-const std::string CraftingUtils::GetWorkstation(const ProtocolCraft::Recipe &recipe)
-{
+const std::string CraftingUtils::GetWorkstation(const ProtocolCraft::Recipe &recipe) {
     const ProtocolCraft::Identifier &recipe_type = recipe.GetType();
 
     if (recipe_type.GetFull() == "minecraft:crafting_shapeless")
@@ -159,6 +158,32 @@ const std::string CraftingUtils::GetWorkstation(const ProtocolCraft::Recipe &rec
         return "minecraft:crafting_table";
     }
 
+}
+
+const bool CraftingUtils::NeedsWorkstation(const ProtocolCraft::Recipe &recipe) {
+    const ProtocolCraft::Identifier &recipe_type = recipe.GetType();
+
+    if (recipe_type.GetFull() == "minecraft:crafting_shapeless")
+    {
+        auto shaped_recipe = std::dynamic_pointer_cast<ProtocolCraft::RecipeTypeDataShaped>(recipe.GetData());
+        return shaped_recipe->GetWidth() > 2 && shaped_recipe->GetHeight() > 2;
+    }
+    else if (recipe_type.GetFull() == "minecraft:crafting_shaped")
+    {
+        auto shapeless_recipe = std::dynamic_pointer_cast<ProtocolCraft::RecipeTypeDataShapeless>(recipe.GetData());
+        // Need to iterate because recipe contains empty ingredients for some reason
+        int count = 0;
+        for (auto ingredient : shapeless_recipe->GetIngredients()) {
+            if (ingredient.GetItems().size() > 0) {
+                count++;
+            }
+        }
+        return count > 4;
+    }
+    else 
+    {
+        return true;
+    }
 }
 
 std::vector<ProtocolCraft::Recipe> CraftingUtils::GetAvailableRecipes(AdvancedClient& client, const std::string& item_name)

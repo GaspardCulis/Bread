@@ -17,6 +17,9 @@ namespace CraftingUtils {
     /// @brief Gets the workstation block name for a generic recipe
     const std::string GetWorkstation(const ProtocolCraft::Recipe &recipe);
 
+    /// @brief Checks if the recipe needs a workstation or else if it can be crafted in the inventory.
+    const bool NeedsWorkstation(const ProtocolCraft::Recipe &recipe);
+
     /// @brief Gets all available recipes to craft a given item given an AdvancedClient recipe list
     std::vector<ProtocolCraft::Recipe> GetAvailableRecipes(AdvancedClient& client, const std::string& item_name);
 
