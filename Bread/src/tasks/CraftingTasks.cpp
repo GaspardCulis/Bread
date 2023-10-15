@@ -76,15 +76,21 @@ Botcraft::Status CraftingTasks::Craft(AdvancedClient &client, const std::string 
 
     }
 
-    // Can throw range_error but shouldn't due to prior checks
-    auto crafting_matrix = CraftingUtils::CreateCraftingMatrix(client, recipe);
-
+    std::array<std::array<int, 3>, 3> crafting_matrix;
+    try {
+        crafting_matrix = CraftingUtils::CreateCraftingMatrix(client, recipe);
+    } catch (std::range_error) {
+        LOG_ERROR("[Craft] CreateCraftingMatrix returned range_error");
+        return Status::Failure;
+    }
     
     if (Craft(client, crafting_matrix, !needs_workstation) == Status::Success) {
         LOG_INFO("[Craft] Crafted " << item_name);
+        CloseContainer(client);
         return Status::Success;
     } else {
         LOG_WARNING("[Craft] Failed to craft item " << item_name);
+        CloseContainer(client);
         return Status::Failure;
     }
 }

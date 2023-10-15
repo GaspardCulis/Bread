@@ -255,7 +255,7 @@ const std::array<std::array<int, 3>, 3> CraftingUtils::CreateCraftingMatrix(Mana
         // If we didn't find an item
         if (found_item_id < 0)
         {
-            throw std::out_of_range("Counld't find an item in inventory satisfaying ingredients for recipe");
+            throw std::range_error("Counld't find an item in inventory satisfaying ingredients for recipe");
         } 
         abstract_inv[found_item_id] -= found_item_count;
 
