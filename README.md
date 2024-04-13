@@ -8,7 +8,7 @@
  
  Status
  ------
- - In (slow) development
+ - Being re-implemented in Rust 
  
   Credits
  ------
